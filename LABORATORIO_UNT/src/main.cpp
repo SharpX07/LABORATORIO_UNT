@@ -65,11 +65,11 @@ int main()
 		(DirPath + "shaders/anim_model.fs").c_str());
 	Shader gunShader((DirPath + "shaders/gun.vs").c_str(),
 		(DirPath + "shaders/gun.fs").c_str());
-	Shader simplecolor((DirPath+"shaders/simplecolor.vs").c_str(), (DirPath + "shaders/simplecolor.fs").c_str());
+	Shader simplecolor((DirPath + "shaders/simplecolor.vs").c_str(), (DirPath + "shaders/simplecolor.fs").c_str());
 
 	// load models
 	// -----------
-	Object ourModel(DirPath + "models/libro1.gltf");
+	Object ourModel(DirPath + "models/sponza.obj");
 	//Model ourModel(DirPath + "models/mapajuegofinal.obj");
 
 	Object targets(DirPath + "models/hands.gltf");
@@ -98,7 +98,7 @@ int main()
 	sf::Clock deltaClock;
 
 	Light light;
-	light.position = { 0.0f, 0.0f, 1.0f };
+	light.position = { 0.0f, 50.0f, 0.0f };
 	light.color = { 255,255,255 };
 	while (running)
 	{
@@ -131,7 +131,7 @@ int main()
 			camera.ProcessKeyboard(BACKWARD, dt.asSeconds());
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
 			camera.ProcessKeyboard(RIGHT, dt.asSeconds());
-		if(sf::Mouse::isButtonPressed(sf::Mouse::Right))
+		if (sf::Mouse::isButtonPressed(sf::Mouse::Right))
 		{
 			camera.Zoom = 20;
 		}
@@ -164,16 +164,16 @@ int main()
 		staticshader.setMat4("view", view);
 		staticshader.setVec3("viewPos", camera.Position);
 		// light properties
-		light.color = {255,255,255};
+		light.color = { 255,255,255 };
 		light.setLightShader(staticshader);
 		glm::mat4 transf;
 		transf = glm::rotate(transf, glm::radians(i), glm::vec3(0, 1, 0));
 		// render the loaded model
-		ourModel.position = { 0,0,i};
+		//ourModel.position = { 0,0,i };
 		staticshader.setMat4("model", getTranformationMatrix(ourModel.position, ourModel.rotation, ourModel.scale));
 		ourModel.model->Draw(staticshader);
 
-		//ourModel.sc = {0,1,0,i};
+		ourModel.scale = {0.01,0.01,0.01};
 
 		gunShader.use();
 		gunShader.setMat4("projection", projection);
@@ -187,7 +187,7 @@ int main()
 		gunShader.setMat4("model", getTranformationMatrix(targets.position, targets.rotation, targets.scale));
 		targets.model->Draw(gunShader);
 		//light.position = { 0.0f, 0.0f, sin(i)};
-		
+
 		glm::mat4 matrix = glm::mat4(1.0f);
 		simplecolor.use();
 		projection = glm::perspective(glm::radians(camera.Zoom), (float)800 / (float)600, 0.01f, 3000.0f);
@@ -195,12 +195,12 @@ int main()
 		simplecolor.setMat4("projection", matrix);
 		simplecolor.setMat4("view", view);
 		matrix = glm::translate(matrix, camera.Position);
-		matrix = glm::scale(matrix, glm::vec3(0.5,0.5,0.5));
+		matrix = glm::scale(matrix, glm::vec3(0.5, 0.5, 0.5));
 		simplecolor.setMat4("model", matrix);
 		// light properties
 		glLineWidth((GLfloat)2);
 		// Habilitar estados fijos
-	
+
 		simplecolor.setVec3("color", glm::vec3(1, 0, 0));
 		glBegin(GL_LINES);
 		glVertex3f(0, 0, 0);
@@ -223,15 +223,14 @@ int main()
 		//shape.setFillColor(sf::Color(100, 250, 50));
 		//window.draw(shape);
 
-		
+
 		// end the current frame (internally swaps the front and back buffers)
 		window.display();
 		i += 0.001f;
-		
+
 	}
 
 	// release resources...
 
 	return 0;
 }
-

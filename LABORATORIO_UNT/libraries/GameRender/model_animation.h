@@ -267,9 +267,6 @@ private:
 		int height = embeddedTexture->mHeight;
 		int nrComponents;
 		int channels;
-		string filename = "C:\\VISUAL_STUDIO\\LABORATORIO_UNT\\LABORATORIO_UNT\\models/textures/textura_libro.png";
-		std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
-		std::wstring wideString = converter.from_bytes(filename);
 		if (height == 0) {
 			// La textura está comprimida, utiliza DevIL para cargarla
 			
@@ -278,7 +275,6 @@ private:
 			GLenum format = GL_RGBA;
 			unsigned char* imageData = ilGetData();
 			
-			std::ofstream outputFile("pixels.txt");
 			//unsigned char* data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
 			unsigned char* data = stbi_load_from_memory(
 				reinterpret_cast<const stbi_uc*>(embeddedTexture->pcData),
@@ -288,18 +284,6 @@ private:
 				&channels,
 				0
 			);
-
-
-			for (int y = 0; y < height; y++) {
-				for (int x = 0; x < width; x++) {
-					outputFile << static_cast<int>(data[y * width * channels + 4 * x]) << " "
-						<< static_cast<int>(data[y * width * channels + 4 * x + 1]) << " "
-						<< static_cast<int>(data[y * width * channels + 4 * x + 2]) << " "
-						<< static_cast<int>(data[y * width * channels + 4 * x + 3]) << "\n";
-				}
-			}
-
-			
 
 			glBindTexture(GL_TEXTURE_2D, textureID);
 			glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
