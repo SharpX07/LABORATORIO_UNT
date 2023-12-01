@@ -1,0 +1,84 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Header Files\Commons">
+      <UniqueIdentifier>{84669333-5824-42ff-b296-335b897671a4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\GameRender">
+      <UniqueIdentifier>{a7ece00b-309d-4463-be25-47acab05bfcd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\GameObjects">
+      <UniqueIdentifier>{38f61156-95a7-4c25-91f7-e4aa5bc96dc3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\GameLogic">
+      <UniqueIdentifier>{7633fbdb-f7a6-405b-9f98-19f68f7a8596}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Utils">
+      <UniqueIdentifier>{14051f47-56c0-489d-a7ff-92d4df59b66a}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\glad.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="GameApp.h">
+      <Filter>Header Files\GameObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="Libraries\Commons\glad_helpers.h">
+      <Filter>Header Files\Commons</Filter>
+    </ClInclude>
+    <ClInclude Include="Libraries\GameObjects\Object.h">
+      <Filter>Header Files\GameObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="Libraries\Commons\assimp_glm_helpers.h">
+      <Filter>Header Files\Commons</Filter>
+    </ClInclude>
+    <ClInclude Include="Libraries\Commons\transformation_matrix.h">
+      <Filter>Header Files\Commons</Filter>
+    </ClInclude>
+    <ClInclude Include="Libraries\Utils\util_drawing.h">
+      <Filter>Header Files\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\GameRender\mesh.h">
+      <Filter>Header Files\GameRender</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\GameRender\model_animation.h">
+      <Filter>Header Files\GameRender</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\GameRender\shader.h">
+      <Filter>Header Files\GameRender</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\GameRender\animation.h">
+      <Filter>Header Files\GameRender</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\GameRender\animator.h">
+      <Filter>Header Files\GameRender</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\GameRender\animdata.h">
+      <Filter>Header Files\GameRender</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\GameRender\bone.h">
+      <Filter>Header Files\GameRender</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\GameRender\camera.h">
+      <Filter>Header Files\GameRender</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
