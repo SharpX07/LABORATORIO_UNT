@@ -29,10 +29,11 @@ void Scene::draw()
 		{
 			instances.at(i)->configureShaderLights(lights.at(j)->color, lights.at(j)->position);
 		}
-	}
-
-	for (int i = 0; i < instances.size(); i++)
-	{
 		instances.at(i)->draw();
 	}
+
+	/*for (int i = 0; i < instances.size(); i++)
+	{
+		instances.at(i)->draw();
+	}*/
 }

@@ -7,9 +7,8 @@ glm::mat4 Instance::getTranformationMatrix()
 
 	glm::quat Qrotation = glm::quat(glm::radians(rotation));
 
-	//matrix = glm::translate(matrix, -position);
-	matrix = glm::rotate(matrix, glm::angle(Qrotation), glm::axis(Qrotation));
 	matrix = glm::translate(matrix, position);
+	matrix = glm::rotate(matrix, glm::angle(rotationTrue), glm::axis(rotationTrue));
 	matrix = glm::scale(matrix, scale);
 	return matrix;
 }
