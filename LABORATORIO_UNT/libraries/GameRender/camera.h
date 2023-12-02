@@ -71,7 +71,7 @@ public:
 
     glm::mat4 getProjectionMatrix()
     {
-        return glm::perspective(glm::radians(this->Zoom), (float)windowSize.x / (float)windowSize.y, 0.01f, 1000.0f);
+        return glm::perspective(glm::radians(this->Zoom), (float)windowSize.x / (float)windowSize.y, 0.01f, 5000.0f);
         
     }
 

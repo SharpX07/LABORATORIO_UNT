@@ -144,7 +144,10 @@
   <ItemGroup>
     <ClInclude Include="GameApp.h" />
     <ClInclude Include="Libraries\Commons\assimp_glm_helpers.h" />
+    <ClInclude Include="libraries\Commons\debug_helpers.h" />
     <ClInclude Include="Libraries\Commons\glad_helpers.h" />
+    <ClInclude Include="libraries\Commons\json_configs.h" />
+    <ClInclude Include="libraries\Commons\input_movement.h" />
     <ClInclude Include="Libraries\Commons\transformation_matrix.h" />
     <ClInclude Include="Libraries\GameObjects\Object.h" />
     <ClInclude Include="libraries\GameRender\animation.h" />
@@ -159,6 +162,9 @@
     <ClInclude Include="libraries\GameRender\Scene.h" />
     <ClInclude Include="libraries\GameRender\shader.h" />
     <ClInclude Include="Libraries\Utils\util_drawing.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="configuration\window_context.json" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

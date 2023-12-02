@@ -28,6 +28,9 @@
     <Filter Include="Header Files\Utils">
       <UniqueIdentifier>{14051f47-56c0-489d-a7ff-92d4df59b66a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Configuration Files">
+      <UniqueIdentifier>{98f32665-1ab6-4aaa-b486-adb60ed1c82f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\glad.c">
@@ -101,5 +104,19 @@
     <ClInclude Include="libraries\GameRender\Scene.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="libraries\Commons\json_configs.h">
+      <Filter>Header Files\Commons</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\Commons\input_movement.h">
+      <Filter>Header Files\Commons</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\Commons\debug_helpers.h">
+      <Filter>Header Files\Commons</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="configuration\window_context.json">
+      <Filter>Configuration Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

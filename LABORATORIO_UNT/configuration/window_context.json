@@ -1,0 +1,14 @@
+{
+  "context_settings": {
+    "depthBits": 24,
+    "stencilBits": 8,
+    "antialiasing_level": 4,
+    "major_version": 3,
+    "minor_version": 3
+  },
+  "window_settings": {
+    "size_x": 800,
+    "size_y": 600,
+    "vsync": true
+  }
+}
