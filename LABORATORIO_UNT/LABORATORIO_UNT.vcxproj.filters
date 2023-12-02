@@ -36,6 +36,18 @@
     <ClCompile Include="src\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="source\Instance.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Asset.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="libraries\GameObjects\Light.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Scene.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameApp.h">
@@ -79,6 +91,15 @@
     </ClInclude>
     <ClInclude Include="libraries\GameRender\camera.h">
       <Filter>Header Files\GameRender</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\GameRender\Instance.h">
+      <Filter>Header Files\GameRender</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\GameRender\Asset.h">
+      <Filter>Header Files\GameRender</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\GameRender\Scene.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -33,6 +33,9 @@ public:
     glm::vec3 Up;
     glm::vec3 Right;
     glm::vec3 WorldUp;
+    glm::mat4 projection;
+    glm::uvec2 windowSize;
+
     // euler Angles
     float Yaw;
     float Pitch;
@@ -64,6 +67,12 @@ public:
     glm::mat4 GetViewMatrix()
     {
         return glm::lookAt(Position, Position + Front,Up);
+    }
+
+    glm::mat4 getProjectionMatrix()
+    {
+        return glm::perspective(glm::radians(this->Zoom), (float)windowSize.x / (float)windowSize.y, 0.01f, 1000.0f);
+        
     }
 
     // processes input received from any keyboard-like input system. Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)

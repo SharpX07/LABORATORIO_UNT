@@ -134,8 +134,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="libraries\GameObjects\Light.cpp" />
+    <ClCompile Include="source\Instance.cpp" />
+    <ClCompile Include="src\Asset.cpp" />
     <ClCompile Include="src\glad.c" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\Scene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameApp.h" />
@@ -146,10 +150,13 @@
     <ClInclude Include="libraries\GameRender\animation.h" />
     <ClInclude Include="libraries\GameRender\animator.h" />
     <ClInclude Include="libraries\GameRender\animdata.h" />
+    <ClInclude Include="libraries\GameRender\Asset.h" />
     <ClInclude Include="libraries\GameRender\bone.h" />
     <ClInclude Include="libraries\GameRender\camera.h" />
+    <ClInclude Include="libraries\GameRender\Instance.h" />
     <ClInclude Include="libraries\GameRender\mesh.h" />
     <ClInclude Include="libraries\GameRender\model_animation.h" />
+    <ClInclude Include="libraries\GameRender\Scene.h" />
     <ClInclude Include="libraries\GameRender\shader.h" />
     <ClInclude Include="Libraries\Utils\util_drawing.h" />
   </ItemGroup>
