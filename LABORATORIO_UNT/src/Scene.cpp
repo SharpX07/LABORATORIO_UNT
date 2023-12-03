@@ -37,3 +37,8 @@ void Scene::draw()
 		instances.at(i)->draw();
 	}*/
 }
+
+void Scene::update(float timeStep)
+{
+	physicsManager->dynamicsWorld->stepSimulation(timeStep);
+}
