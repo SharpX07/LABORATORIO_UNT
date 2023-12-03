@@ -124,7 +124,8 @@ private:
 			Vertex vertex;
 			SetVertexBoneDataToDefault(vertex);
 			vertex.Position = _transformation * glm::vec4(AssimpGLMHelpers::GetGLMVec(mesh->mVertices[i]),1.0f);
-			vertex.Normal = _transformation * glm::vec4(AssimpGLMHelpers::GetGLMVec(mesh->mNormals[i]),1.0f);
+			
+			vertex.Normal = glm::transpose(glm::inverse(_transformation)) * glm::vec4(AssimpGLMHelpers::GetGLMVec(mesh->mNormals[i]),1.0f);
 
 			//vertex.Position = AssimpGLMHelpers::GetGLMVec(mesh->mVertices[i]);
 			//vertex.Normal = AssimpGLMHelpers::GetGLMVec(mesh->mNormals[i]);

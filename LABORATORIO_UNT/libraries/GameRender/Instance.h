@@ -6,11 +6,17 @@
 class Instance
 {
 public:
+	
+	int ID;
+	string Name;
 	Asset* asset;
-	glm::vec3 position{ 0,0,0 };
-	glm::vec3 rotation{ 0,0,0 };
+	glm::vec3 Position{ 0,0,0 };
+	glm::vec3 Rotation{ 0,0,0 };
 	glm::quat rotationTrue{ 1,0,0,0 };
 	glm::vec3 scale{ 1,1,1 };
+
+	Instance(Asset *asset);
+	Instance(Asset* asset, string name);
 
 	glm::mat4 getTranformationMatrix();
 
@@ -22,6 +28,8 @@ public:
 		glm::vec3 LightPos);
 
 	void draw();
+private:
+	static int generateID();
 };
 
 

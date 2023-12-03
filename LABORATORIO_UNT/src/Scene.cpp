@@ -1,4 +1,4 @@
-#include "GameRender/Scene.h"
+#include "GameLogic/Scene.h"
 
 void Scene::addLight(Light* light)
 {

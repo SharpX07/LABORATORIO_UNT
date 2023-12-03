@@ -7,6 +7,7 @@ class Asset
 public:
 	Shader* shader;
 	Model* model;
-	GLenum drawType;
+
+	Asset(Shader* shader, Model* model);
 };
 

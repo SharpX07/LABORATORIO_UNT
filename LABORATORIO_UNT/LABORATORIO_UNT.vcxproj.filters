@@ -51,6 +51,12 @@
     <ClCompile Include="src\Scene.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Physics_manager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rigidbody.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameApp.h">
@@ -58,9 +64,6 @@
     </ClInclude>
     <ClInclude Include="Libraries\Commons\glad_helpers.h">
       <Filter>Header Files\Commons</Filter>
-    </ClInclude>
-    <ClInclude Include="Libraries\GameObjects\Object.h">
-      <Filter>Header Files\GameObjects</Filter>
     </ClInclude>
     <ClInclude Include="Libraries\Commons\assimp_glm_helpers.h">
       <Filter>Header Files\Commons</Filter>
@@ -101,9 +104,6 @@
     <ClInclude Include="libraries\GameRender\Asset.h">
       <Filter>Header Files\GameRender</Filter>
     </ClInclude>
-    <ClInclude Include="libraries\GameRender\Scene.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="libraries\Commons\json_configs.h">
       <Filter>Header Files\Commons</Filter>
     </ClInclude>
@@ -112,6 +112,15 @@
     </ClInclude>
     <ClInclude Include="libraries\Commons\debug_helpers.h">
       <Filter>Header Files\Commons</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\GameLogic\Scene.h">
+      <Filter>Header Files\GameLogic</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\GameLogic\Physics_manager.h">
+      <Filter>Header Files\GameLogic</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\GameLogic\Rigidbody.h">
+      <Filter>Header Files\GameLogic</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -139,6 +139,8 @@
     <ClCompile Include="src\Asset.cpp" />
     <ClCompile Include="src\glad.c" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\Physics_manager.cpp" />
+    <ClCompile Include="src\Rigidbody.cpp" />
     <ClCompile Include="src\Scene.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -149,7 +151,9 @@
     <ClInclude Include="libraries\Commons\json_configs.h" />
     <ClInclude Include="libraries\Commons\input_movement.h" />
     <ClInclude Include="Libraries\Commons\transformation_matrix.h" />
-    <ClInclude Include="Libraries\GameObjects\Object.h" />
+    <ClInclude Include="libraries\GameLogic\Physics_manager.h" />
+    <ClInclude Include="libraries\GameLogic\Rigidbody.h" />
+    <ClInclude Include="libraries\GameLogic\Scene.h" />
     <ClInclude Include="libraries\GameRender\animation.h" />
     <ClInclude Include="libraries\GameRender\animator.h" />
     <ClInclude Include="libraries\GameRender\animdata.h" />
@@ -159,7 +163,6 @@
     <ClInclude Include="libraries\GameRender\Instance.h" />
     <ClInclude Include="libraries\GameRender\mesh.h" />
     <ClInclude Include="libraries\GameRender\model_animation.h" />
-    <ClInclude Include="libraries\GameRender\Scene.h" />
     <ClInclude Include="libraries\GameRender\shader.h" />
     <ClInclude Include="Libraries\Utils\util_drawing.h" />
   </ItemGroup>

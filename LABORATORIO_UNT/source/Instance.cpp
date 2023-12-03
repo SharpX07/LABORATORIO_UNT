@@ -1,13 +1,19 @@
 #include <GameRender/Instance.h>
 #include <glm/gtc/matrix_transform.hpp>
 
+Instance::Instance(Asset* asset)
+{
+	this->asset = asset;
+	ID = generateID();
+}
+
 glm::mat4 Instance::getTranformationMatrix()
 {
 	glm::mat4 matrix = glm::mat4(1.0f);
 
-	glm::quat Qrotation = glm::quat(glm::radians(rotation));
+	glm::quat Qrotation = glm::quat(glm::radians(Rotation));
 
-	matrix = glm::translate(matrix, position);
+	matrix = glm::translate(matrix, Position);
 	matrix = glm::rotate(matrix, glm::angle(rotationTrue), glm::axis(rotationTrue));
 	matrix = glm::scale(matrix, scale);
 	return matrix;
@@ -33,5 +39,11 @@ void Instance::draw()
 {
 	asset->shader->use();
 	asset->model->Draw(*asset->shader);
+}
+
+int Instance::generateID()
+{
+	static int IDcounter = 0;
+	return ++IDcounter;
 }
 
