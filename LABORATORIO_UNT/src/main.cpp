@@ -24,7 +24,7 @@
 #include <GameLogic/Physics_manager.h>
 #include <SFML/System/Clock.hpp>
 
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+void processInput(GLFWwindow* window);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
@@ -122,7 +122,6 @@ int main()
 	phyManager.collisionShapes.push_back(colShape);
 	Rigidbody rgb2(colShape, btScalar(1.0), btVector3(0, 50, 58));
 	phyManager.addRigidBody(rgb2);
-	glfwSetKeyCallback(window, key_callback);
 	glfwSetCursorPosCallback(window, mouse_callback);
 
 	while (running)
@@ -130,7 +129,7 @@ int main()
 		deltaTime = deltaTimeClock.restart().asSeconds();
 		// handle events
 		glfwPollEvents();
-
+		processInput(window);
 		if (glfwWindowShouldClose(window))
 			running = false;
 
@@ -172,7 +171,7 @@ int main()
 	return 0;
 }
 
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+void processInput(GLFWwindow* window)
 {
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 		MyScene.camera->ProcessKeyboard(FORWARD, deltaTime);
