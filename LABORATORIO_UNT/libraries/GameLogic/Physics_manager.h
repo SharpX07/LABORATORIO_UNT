@@ -1,6 +1,7 @@
 #pragma once
 #include "bullet/btBulletDynamicsCommon.h"
 #include <GameLogic/Rigidbody.h>
+#include <GameRender/Instance.h>
 #include <vector>
 class PhysicsManager
 {
@@ -14,7 +15,7 @@ public:
     // Objects
     btAlignedObjectArray<btCollisionShape*> collisionShapes;
     std::vector<btRigidBody*> rigidbodies;
-
+    
     PhysicsManager();
     ~PhysicsManager();
 

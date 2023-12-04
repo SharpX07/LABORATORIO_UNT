@@ -1,11 +1,7 @@
 #include "Light.h"
 
-int Light::setLightShader(Shader& shader)
+Light::Light(glm::vec3 position, glm::uvec3 color)
 {
-	color.x /= 255;
-	color.y /= 255;
-	color.z /= 255;
-	shader.setVec3("lightColor", color);
-	shader.setVec3("lightPos", position);
-	return 1;
+	this->position = position;
+	this->color = color;
 }

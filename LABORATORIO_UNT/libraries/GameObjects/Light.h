@@ -7,12 +7,7 @@
 class Light {
 public:
 	glm::vec3 position{ 0.0f, 0.0f, 0.0f };
-	glm::vec3 color{ 255,255,255 };
+	glm::uvec3 color{ 255,255,255 };
 
-	Light() {
-
-	}
-
-	//Return -1 if any attribute didn't load correctly
-	int setLightShader(Shader& shader);
+	Light(glm::vec3 position = glm::vec3{ 0,0,0 }, glm::uvec3 color = glm::uvec3{ 0,0,0 });
 };

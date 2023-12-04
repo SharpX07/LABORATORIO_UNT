@@ -82,10 +82,8 @@ int main()
 
 	Instance deb = Instance(&Box);
 	Instance bbola = Instance(&Box);
-
-	Light light;
-	light.position = { 0.0f, 50.0f, 20.0f };
-	light.color = { 255, 255, 255 };
+	Instance Luz = Instance(&Box);
+	Light light({ 0.0f, 50.0f, 20.0f }, { 255, 255, 255 });
 
 	Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
 	camera.windowSize = { 800, 600 };
@@ -100,7 +98,7 @@ int main()
 	PhysicsManager phyManager = PhysicsManager();
 	MyScene.physicsManager = &phyManager;
 
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_TRIANGLES);
 
 	// render loop
 	// -----------
@@ -124,6 +122,9 @@ int main()
 	phyManager.addRigidBody(rgb2);
 	glfwSetCursorPosCallback(window, mouse_callback);
 
+	deb.rigidBody = &rgb1;
+	bbola.rigidBody = &rgb2;
+
 	while (running)
 	{
 		deltaTime = deltaTimeClock.restart().asSeconds();
@@ -138,24 +139,12 @@ int main()
 
 		auto positionDEB = rgb1.Body->getWorldTransform();
 		btVector3 dimensions = static_cast<btBoxShape*>(rgb1.Body->getCollisionShape())->getHalfExtentsWithMargin();
-		deb.Position = { positionDEB.getOrigin().x(), positionDEB.getOrigin().y(), positionDEB.getOrigin().z() };
 		deb.scale = { dimensions.x() * 1, dimensions.y() * 1, dimensions.z() * 1 };
 
 		positionDEB = rgb2.Body->getWorldTransform();
 		dimensions = static_cast<btBoxShape*>(rgb2.Body->getCollisionShape())->getHalfExtentsWithMargin();
-		bbola.Position = { positionDEB.getOrigin().x(), positionDEB.getOrigin().y(), positionDEB.getOrigin().z() };
 		bbola.scale = { dimensions.x() * 1, dimensions.y() * 1, dimensions.z() * 1 };
-
-		{
-			btQuaternion rotationQuaternion = positionDEB.getRotation();
-			glm::quat quaternion = { rotationQuaternion.z(), rotationQuaternion.y(), rotationQuaternion.x(), -rotationQuaternion.w() };
-			// Convierte el cuaternio a euler
-			glm::vec3 euler = glm::eulerAngles(quaternion);
-			std::cout << "--------- x:" << euler.x << "  y:" << euler.y << "  z:" << euler.z << "\n";
-			//bbola.rotation = { euler.x*180/ 3.141592,euler.y * 180 / 3.141592,euler.z * 180 / 3.141592 };
-			bbola.rotationTrue = quaternion;
-			//camera.Position = bbola.position;
-		}
+		
 		MyScene.draw();
 		MyScene.update(1.f / 60.f);
 		draw_3daxis(simplecolor, camera);

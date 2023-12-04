@@ -31,14 +31,13 @@ void Scene::draw()
 		}
 		instances.at(i)->draw();
 	}
-
-	/*for (int i = 0; i < instances.size(); i++)
-	{
-		instances.at(i)->draw();
-	}*/
 }
 
 void Scene::update(float timeStep)
 {
 	physicsManager->dynamicsWorld->stepSimulation(timeStep);
+	for (int i = 0; i < instances.size(); i++)
+	{
+		instances.at(i)->update();
+	}
 }
