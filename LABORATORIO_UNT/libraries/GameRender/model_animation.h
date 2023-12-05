@@ -21,7 +21,6 @@
 #include <vector>
 #include "Commons/assimp_glm_helpers.h"
 #include "GameRender/animdata.h"
-#include <IL/il.h>
 #include <locale>
 #include <codecvt>
 #include <iostream>
@@ -274,7 +273,6 @@ private:
 			//ilConvertImage(IL_RGBA, IL_UNSIGNED_BYTE);
 
 			GLenum format = GL_RGBA;
-			unsigned char* imageData = ilGetData();
 			
 			//unsigned char* data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
 			unsigned char* data = stbi_load_from_memory(

@@ -138,6 +138,7 @@
     <ClCompile Include="source\Instance.cpp" />
     <ClCompile Include="src\Asset.cpp" />
     <ClCompile Include="src\glad.c" />
+    <ClCompile Include="src\GLDebugDrawer.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Physics_manager.cpp" />
     <ClCompile Include="src\Rigidbody.cpp" />
@@ -160,6 +161,7 @@
     <ClInclude Include="libraries\GameRender\Asset.h" />
     <ClInclude Include="libraries\GameRender\bone.h" />
     <ClInclude Include="libraries\GameRender\camera.h" />
+    <ClInclude Include="libraries\GameRender\GLDebugDrawer.h" />
     <ClInclude Include="libraries\GameRender\Instance.h" />
     <ClInclude Include="libraries\GameRender\mesh.h" />
     <ClInclude Include="libraries\GameRender\model_animation.h" />
