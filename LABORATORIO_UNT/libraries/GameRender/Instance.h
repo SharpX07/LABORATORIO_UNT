@@ -14,6 +14,7 @@ public:
 	glm::vec3 Position{ 0,0,0 };
 	glm::quat Rotation{ 1,0,0,0 };
 	glm::vec3 scale{ 1,1,1 };
+	bool isVisible = true;
 	Rigidbody* rigidBody;
 
 	Instance(Asset* asset);

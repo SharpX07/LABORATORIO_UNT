@@ -10,10 +10,10 @@ PhysicsManager::PhysicsManager()
     dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
 }
 
-void PhysicsManager::addRigidBody(Rigidbody &rgbody)
+void PhysicsManager::addRigidBody(Rigidbody* rgbody)
 {
-    rigidbodies.push_back(rgbody.Body);
-    dynamicsWorld->addRigidBody(rgbody.Body);
+    rigidbodies.push_back(rgbody->Body);
+    dynamicsWorld->addRigidBody(rgbody->Body);
 }
 
 PhysicsManager::~PhysicsManager()

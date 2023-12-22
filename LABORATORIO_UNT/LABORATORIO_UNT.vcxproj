@@ -140,21 +140,27 @@
     <ClCompile Include="src\glad.c" />
     <ClCompile Include="src\GLDebugDrawer.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\Pendulum.cpp" />
     <ClCompile Include="src\Physics_manager.cpp" />
     <ClCompile Include="src\Rigidbody.cpp" />
     <ClCompile Include="src\Scene.cpp" />
+    <ClCompile Include="src\Spring.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameApp.h" />
     <ClInclude Include="Libraries\Commons\assimp_glm_helpers.h" />
     <ClInclude Include="libraries\Commons\debug_helpers.h" />
-    <ClInclude Include="Libraries\Commons\glad_helpers.h" />
+    <ClInclude Include="libraries\Commons\debug_ui.h" />
+    <ClInclude Include="Libraries\Commons\glad_glfw_helpers.h" />
+    <ClInclude Include="libraries\Commons\imgui_UI.h" />
     <ClInclude Include="libraries\Commons\json_configs.h" />
     <ClInclude Include="libraries\Commons\input_movement.h" />
     <ClInclude Include="Libraries\Commons\transformation_matrix.h" />
     <ClInclude Include="libraries\GameLogic\Physics_manager.h" />
     <ClInclude Include="libraries\GameLogic\Rigidbody.h" />
     <ClInclude Include="libraries\GameLogic\Scene.h" />
+    <ClInclude Include="libraries\GameObjects\Pendulum.h" />
+    <ClInclude Include="libraries\GameObjects\Spring.h" />
     <ClInclude Include="libraries\GameRender\animation.h" />
     <ClInclude Include="libraries\GameRender\animator.h" />
     <ClInclude Include="libraries\GameRender\animdata.h" />
@@ -170,6 +176,16 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="configuration\window_context.json" />
+    <None Include="shaders\1.model_loading.fs" />
+    <None Include="shaders\1.model_loading.vs" />
+    <None Include="shaders\anim_model.glsl" />
+    <None Include="shaders\anim_model.vs" />
+    <None Include="shaders\gun.fs" />
+    <None Include="shaders\gun.vs" />
+    <None Include="shaders\lightF.fs" />
+    <None Include="shaders\lightV.vs" />
+    <None Include="shaders\simplecolor.fs" />
+    <None Include="shaders\simplecolor.vs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

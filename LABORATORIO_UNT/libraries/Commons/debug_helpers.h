@@ -36,3 +36,5 @@ void draw_3daxis(Shader &simplecolor, Camera &camera)
 	glVertex3f(0, 0, 0.5f);
 	glEnd();
 }
+
+class de

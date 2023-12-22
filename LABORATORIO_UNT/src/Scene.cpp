@@ -1,5 +1,6 @@
 #include "GameLogic/Scene.h"
 
+
 void Scene::addLight(Light* light)
 {
 	lights.push_back(light);
@@ -21,6 +22,8 @@ void Scene::draw()
 {
 	for(int i=0;i<instances.size();i++)
 	{
+		if (!instances.at(i)->isVisible)
+			continue;
 		instances.at(i)->configureShaderMatrices(
 			camera->getProjectionMatrix(),
 			camera->GetViewMatrix(),
@@ -33,9 +36,9 @@ void Scene::draw()
 	}
 }
 
-void Scene::update(float timeStep)
+void Scene::update(float timeStep,int maxSubSteps)
 {
-	physicsManager->dynamicsWorld->stepSimulation(timeStep);
+	physicsManager->dynamicsWorld->stepSimulation(timeStep,maxSubSteps);
 	for (int i = 0; i < instances.size(); i++)
 	{
 		instances.at(i)->update();

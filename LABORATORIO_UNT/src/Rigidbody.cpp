@@ -17,3 +17,22 @@ Rigidbody::Rigidbody(btCollisionShape* CollisionShape, btScalar Mass, btVector3 
 	btRigidBody::btRigidBodyConstructionInfo rbInfo(this->Mass, MotionState, this->CollisionShape, LocalInertia);
 	Body = new btRigidBody(rbInfo);
 }
+
+void Rigidbody::setPosition(btVector3 newPosition)
+{
+	//btVector3 newPosition(1, 2, 3); // Nueva posición
+	btTransform newTransform;
+	newTransform.setIdentity();
+	newTransform.setOrigin(newPosition);
+
+	Body->getMotionState()->setWorldTransform(newTransform);
+	Body->setCenterOfMassTransform(newTransform);
+}
+
+btVector3 Rigidbody::getPosition()
+{
+	btTransform currentTransform;
+	Body->getMotionState()->getWorldTransform(currentTransform);
+
+	return currentTransform.getOrigin();
+}

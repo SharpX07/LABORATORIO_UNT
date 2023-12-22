@@ -19,6 +19,6 @@ public:
     PhysicsManager();
     ~PhysicsManager();
 
-    void addRigidBody(Rigidbody &rgbody);
+    void addRigidBody(Rigidbody* rgbody);
 };
 

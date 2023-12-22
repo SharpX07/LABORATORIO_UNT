@@ -1,12 +1,19 @@
 #pragma once
 #include <bullet/LinearMath/btIDebugDraw.h>
+#include <iostream>
+#include <GameRender/camera.h>
+#include <GameRender/shader.h>
 class GLDebugDrawer : public btIDebugDraw
 {
     int m_debugMode;
+    unsigned int VBO, VAO, shaderProgram;
 
 public:
-
+    Camera *camera;
+    Shader* shaderDebug;
     GLDebugDrawer();
+    std::vector<float> allVertices;
+    void flushLines();
 
     virtual void   drawLine(const btVector3& from, const btVector3& to, const btVector3& color);
 

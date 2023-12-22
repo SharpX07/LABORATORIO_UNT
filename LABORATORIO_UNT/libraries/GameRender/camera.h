@@ -4,7 +4,7 @@
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-
+#include <iostream>
 #include <vector>
 
 // Defines several possible options for camera movement. Used as abstraction to stay away from window-system specific input methods
@@ -33,8 +33,7 @@ public:
     glm::vec3 Up;
     glm::vec3 Right;
     glm::vec3 WorldUp;
-    glm::mat4 projection;
-    glm::uvec2 windowSize;
+    glm::vec2 windowSize;
 
     // euler Angles
     float Yaw;
@@ -72,8 +71,8 @@ public:
     glm::mat4 getProjectionMatrix()
     {
         return glm::perspective(glm::radians(this->Zoom), (float)windowSize.x / (float)windowSize.y, 0.01f, 5000.0f);
-        
     }
+
 
     // processes input received from any keyboard-like input system. Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)
     void ProcessKeyboard(Camera_Movement direction, float deltaTime)

@@ -16,6 +16,6 @@ public:
 	void addInstance(Instance* instance);
 	void removeInstance();
 	void draw();
-	void update(float timeStep);
+	void update(float timeStep, int maxSubSteps);
 };
 

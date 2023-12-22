@@ -51,10 +51,6 @@ public:
         for(unsigned int i = 0; i < meshes.size(); i++)
             meshes[i].Draw(shader);
     }
-    
-	auto& GetBoneInfoMap() { return m_BoneInfoMap; }
-	int& GetBoneCount() { return m_BoneCounter; }
-	
 
 private:
 
@@ -77,7 +73,7 @@ private:
         directory = path.substr(0, path.find_last_of('/'));
 
         // process ASSIMP's root node recursively
-        processNode(scene->mRootNode, scene);
+		processNode(scene->mRootNode, scene);
     }
 
     // processes a node in a recursive fashion. Processes each individual mesh located at the node and repeats this process on its children nodes (if any).
@@ -100,16 +96,6 @@ private:
 
     }
 
-	void SetVertexBoneDataToDefault(Vertex& vertex)
-	{
-		for (int i = 0; i < MAX_BONE_INFLUENCE; i++)
-		{
-			vertex.m_BoneIDs[i] = -1;
-			vertex.m_Weights[i] = 0.0f;
-		}
-	}
-
-
 	Mesh processMesh(aiMesh* mesh, const aiScene* scene, aiMatrix4x4 transformation)
 	{
 		vector<Vertex> vertices;
@@ -121,7 +107,6 @@ private:
 		for (unsigned int i = 0; i < mesh->mNumVertices; i++)
 		{
 			Vertex vertex;
-			SetVertexBoneDataToDefault(vertex);
 			vertex.Position = _transformation * glm::vec4(AssimpGLMHelpers::GetGLMVec(mesh->mVertices[i]),1.0f);
 			
 			vertex.Normal = glm::transpose(glm::inverse(_transformation)) * glm::vec4(AssimpGLMHelpers::GetGLMVec(mesh->mNormals[i]),1.0f);
@@ -161,61 +146,8 @@ private:
 		std::vector<Texture> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height",scene);
 		textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
 
-		ExtractBoneWeightForVertices(vertices,mesh,scene);
-
 		return Mesh(vertices, indices, textures);
 	}
-
-	void SetVertexBoneData(Vertex& vertex, int boneID, float weight)
-	{
-		for (int i = 0; i < MAX_BONE_INFLUENCE; ++i)
-		{
-			if (vertex.m_BoneIDs[i] < 0)
-			{
-				vertex.m_Weights[i] = weight;
-				vertex.m_BoneIDs[i] = boneID;
-				break;
-			}
-		}
-	}
-
-
-	void ExtractBoneWeightForVertices(std::vector<Vertex>& vertices, aiMesh* mesh, const aiScene* scene)
-	{
-		auto& boneInfoMap = m_BoneInfoMap;
-		int& boneCount = m_BoneCounter;
-
-		for (int boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
-		{
-			int boneID = -1;
-			std::string boneName = mesh->mBones[boneIndex]->mName.C_Str();
-			if (boneInfoMap.find(boneName) == boneInfoMap.end())
-			{
-				BoneInfo newBoneInfo;
-				newBoneInfo.id = boneCount;
-				newBoneInfo.offset = AssimpGLMHelpers::ConvertMatrixToGLMFormat(mesh->mBones[boneIndex]->mOffsetMatrix);
-				boneInfoMap[boneName] = newBoneInfo;
-				boneID = boneCount;
-				boneCount++;
-			}
-			else
-			{
-				boneID = boneInfoMap[boneName].id;
-			}
-			assert(boneID != -1);
-			auto weights = mesh->mBones[boneIndex]->mWeights;
-			int numWeights = mesh->mBones[boneIndex]->mNumWeights;
-
-			for (int weightIndex = 0; weightIndex < numWeights; ++weightIndex)
-			{
-				int vertexId = weights[weightIndex].mVertexId;
-				float weight = weights[weightIndex].mWeight;
-				assert(vertexId <= vertices.size());
-				SetVertexBoneData(vertices[vertexId], boneID, weight);
-			}
-		}
-	}
-
 
 	unsigned int TextureFromFile(const char* path, const string& directory, bool gamma = false)
 	{
@@ -259,7 +191,7 @@ private:
 
 
 	unsigned int TextureFromEmbedded(const aiTexture* embeddedTexture)
-	{
+	{	
 		unsigned int textureID;
 		glGenTextures(1, &textureID);
 
@@ -324,7 +256,6 @@ private:
 					break;
 				}
 			}
-
 			if (!skip)
 			{
 				Texture texture;
