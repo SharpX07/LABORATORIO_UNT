@@ -49,64 +49,30 @@ Scene MyScene;
 Camera camera;
 double deltaTime;
 bool ActiveMenu = false;
-bool constraint = true;
+bool constraint = false;
 // GLDebugDrawer sirve para dibujar lineas en los cuerpos de las fisicas y para ver sus mallas de colisión
 GLDebugDrawer* physicsDebugger;
 btRigidBody* rigidBodyPersonaje;
 btPoint2PointConstraint* agarre;
 PhysicsManager phyManager = PhysicsManager();
-//Función para obtener los fps
-double calculateFPS(double& lastTime, int& nbFrames) {
-	// Obtener el tiempo actual
-	double currentTime = glfwGetTime();
-	// Calcular los milisegundos transcurridos desde el último render
-	double delta = currentTime - lastTime;
-	// Calcular el número de frames por segundo
-	double fps = static_cast<double>(nbFrames) / delta;
-	// Reiniciar el conteo para el siguiente segundo
-	nbFrames = 0;
-	lastTime = currentTime;
-	// Incrementar el contador de frames
-	nbFrames++;
-	return fps;
-}
 
-inline btVector3 convertirGLMtoBullet(const glm::vec3& glmVector) {
-	return btVector3(glmVector.x, glmVector.y, glmVector.z);
-}
+btRigidBody* cuerpoSeleccionado = nullptr;
 
-btConvexHullShape* obtenerMallaColision(Mesh mesh)
-{
-	std::vector<btVector3> vertices;
-	btConvexHullShape* CS_Convex = new btConvexHullShape();
-	if (mesh.vertices.size() > 2000)
-	{
-		return nullptr;
-	}
-	for (int i = 0; i < mesh.vertices.size(); i++)
-	{
-		btVector3 temp = convertirGLMtoBullet(mesh.vertices.at(i).Position);
-		CS_Convex->addPoint(temp);
-	}
-	CS_Convex->recalcLocalAabb();
-	return CS_Convex;
-}
+double calculateFPS(double& lastTime, int& nbFrames);
 
-btRigidBody* obtenerCuerpoPorID(PhysicsManager& physicsManager, int identificadorUnico) {
-	// Recorre todos los cuerpos rígidos en tu sistema
-	for (int i = 0; i < physicsManager.rigidbodies.size(); ++i) {
-		btRigidBody* cuerpoActual = physicsManager.rigidbodies[i];
+btVector3 convertirGLM2Bullet(const glm::vec3& glmVector);
 
-		// Verifica si el user pointer del cuerpo coincide con el identificador único
-		if (reinterpret_cast<intptr_t>(cuerpoActual->getUserPointer()) == identificadorUnico) {
-			return cuerpoActual;
-		}
-	}
+glm::vec3 convertirBullet2GLM(const btVector3& btVector);
 
-	// Retorna nullptr si no se encuentra ningún cuerpo con el identificador
-	return nullptr;
-}
+btConvexHullShape* obtenerMallaColision(Mesh mesh);
 
+btRigidBody* obtenerCuerpoPorID(PhysicsManager& physicsManager, int identificadorUnico);
+
+void agregarRigidbodiesAula(Model M_Room);
+
+void activarMotorPuerta(btHingeConstraint* hinge, btVector3 position, btRigidBody* body);
+
+void limitarPersonaje(btRigidBody* body);
 
 int main()
 {
@@ -163,11 +129,11 @@ int main()
 	Instance I_Tierra = Instance(&A_Tierra, "Esfera");
 	MyScene.addInstance(&I_Tierra);
 
-	Model M_Cubo("models/ico.gltf");
+	Model M_Cubo("models/cubo.gltf");
 	Asset A_Cubo = Asset(&plana, &M_Cubo);
 	Instance I_Cubo = Instance(&A_Cubo, "Cubo");
 	MyScene.addInstance(&I_Cubo);
-	
+
 	Model M_Texto("models/Boton.gltf");
 	Asset A_Texto = Asset(&staticshader, &M_Texto);
 	Instance I_Texto = Instance(&A_Texto);
@@ -202,7 +168,7 @@ int main()
 
 	I_Puerta.Position = { 3.5,1.55 ,-1.3492 - 0.825405 };
 	btCollisionShape* CS_Puerta = new btBoxShape(btVector3(0.04, 1.5, 0.811305));
-	Rigidbody R_Puerta(CS_Puerta, 10, convertirGLMtoBullet(I_Puerta.Position + glm::vec3(0, 0, 0)));
+	Rigidbody R_Puerta(CS_Puerta, 10, convertirGLM2Bullet(I_Puerta.Position + glm::vec3(0, 0, 0)));
 	R_Puerta.Body->setFriction(0.5f);
 	MyScene.physicsManager->addRigidBody(&R_Puerta);
 	btVector3 axis(0, 0, 1); // Eje de rotación vertical
@@ -228,25 +194,11 @@ int main()
 	Rigidbody R_Esfera(CS_Esfera, 10, btVector3(0, 1, 0));
 	MyScene.physicsManager->addRigidBody(&R_Esfera);
 
-	std::vector<btConvexHullShape*> CollShapes;
-	std::vector< Rigidbody> R_Room;
-	for (int i = 0; i < M_Room.meshes.size(); i++)
-	{
-		CollShapes.push_back(obtenerMallaColision(M_Room.meshes[i]));
-		if (CollShapes.back())
-		{
-			R_Room.push_back(Rigidbody(CollShapes.back(), 0, btVector3(0, 0, 0)));
-			MyScene.physicsManager->addRigidBody(&R_Room.back());
-		}else
-		{
-			CollShapes.pop_back();
-		}
-	}
+
+	agregarRigidbodiesAula(M_Room);
 
 	R_Esfera.Body->setUserPointer((void*)(intptr_t)I_Tierra.ID);
 	R_Cubo.Body->setUserPointer((void*)(intptr_t)I_Cubo.ID);
-
-
 
 	I_Cubo.rigidBody = &R_Cubo;
 	rigidBodyPersonaje = R_Personaje.Body;
@@ -256,8 +208,6 @@ int main()
 
 
 	phyManager.dynamicsWorld->setDebugDrawer(physicsDebugger);
-	agarre = new btPoint2PointConstraint(*R_Cubo.Body, btVector3(0, 0, 0));
-	phyManager.dynamicsWorld->addConstraint(agarre, true);
 
 	// Inicialización de depurador de física
 	configurePhysicsDebugger(LineDebug);
@@ -265,7 +215,6 @@ int main()
 	double currentFrame = glfwGetTime();
 	double lastFrame = currentFrame;
 
-	double lastTime = glfwGetTime();
 	int nbFrames = 0;
 
 	//Bucle principal
@@ -291,33 +240,14 @@ int main()
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 		btTransform transform = R_Puerta.Body->getWorldTransform();
-		btVector3 rotation = transform.getOrigin();
+		btVector3 positionPuerta = transform.getOrigin();
 		// Si se presiona escape entonces no se puede mover nada en la escena, el mouse se encuentra libre
 		if (!ActiveMenu)
 			processInput(window);
 		if (!ActiveMenu)
 		{
-			float springConstant = 100.0f; // Constante del resorte
-			float targetAngle = SIMD_HALF_PI;    // Ángulo deseado de cerrado
-			float currentAngle = hingeConstraint->getHingeAngle();
-			float torque = springConstant * (targetAngle - currentAngle);
 
-			if (rotation.getX() < 3.5)
-			{
-				hingeConstraint->enableAngularMotor(true, -0.7f, 0.5f); // Velocidad	
-			}
-
-			if (rotation.getX() > 3.5)
-			{
-				hingeConstraint->enableAngularMotor(true, 0.7f, 0.5f); // Velocidad
-			}
-			if (std::abs(rotation.getX() - 3.5) < 0.01)
-			{
-				R_Puerta.Body->setLinearVelocity(btVector3(0, 0, 0));
-				hingeConstraint->enableAngularMotor(false, 1.0f, 0.5f); // Velocidad
-			}
-
-			//R_Puerta.Body->applyTorque(axis * torque);
+			activarMotorPuerta(hingeConstraint, positionPuerta, R_Puerta.Body);
 
 			R_Personaje.Body->activate();
 			btVector3 fuerza(0.0, 0.0, 0.0);
@@ -338,61 +268,17 @@ int main()
 				A_Tierra.shader = &staticshader;
 			else
 				A_Tierra.shader = &plana;
-			// Obtener la velocidad actual
-			btVector3 velocidadActual = R_Personaje.Body->getLinearVelocity();
-			btVector3 velocidadTemp = R_Personaje.Body->getLinearVelocity();
 
-			// Calcular la magnitud de la velocidad actual
-			float limiteVelocidad = 3.0f;  // Ajusta según sea necesario
-			if (velocidadActual.length() > limiteVelocidad)
-			{
-				// Normalizar la velocidad actual y multiplicar por el límite
-				velocidadActual = velocidadActual.normalized() * limiteVelocidad;
-				velocidadActual.setY(velocidadTemp.getY());
-				// Establecer la velocidad limitada al 
-				R_Personaje.Body->setLinearVelocity(velocidadActual);
-			}
-
-			// Ajustar la fricción lineal y angular
-			R_Personaje.Body->setFriction(2.5f);  // Ajusta este valor según sea necesario
+			limitarPersonaje(R_Personaje.Body);
 			R_Personaje.Body->applyCentralForce(fuerza);
 
-			btVector3 origenRayo(camera.Position.x, camera.Position.y, camera.Position.z);
-			btVector3 destinoRay2(camera.Position.x + camera.Front.x * 2, camera.Position.y + camera.Front.y * 2, camera.Position.z + camera.Front.z * 2);
 
-			int identificadorGolpeado = -1;
-			destinoRay2 = btVector3(camera.Position.x + camera.Front.x * 3, camera.Position.y + camera.Front.y * 3, camera.Position.z + camera.Front.z * 3);
-			bool hit = phyManager.rayCast(origenRayo, destinoRay2, identificadorGolpeado);
-
-			btRigidBody* cuerpo = obtenerCuerpoPorID(phyManager, identificadorGolpeado);
-
-			if (constraint)
-				agarre->setPivotB(destinoRay2);
-
-			if (cuerpo)
+			if (cuerpoSeleccionado)
 			{
-
-				if (constraint)
-				{
-					cuerpo->setLinearVelocity(btVector3(0, 0, 0));
-					cuerpo->setAngularVelocity(btVector3(0, 0, 0));
-				}
-				else
-				{
-					if (agarre != NULL)
-					{
-						delete agarre;
-						agarre = NULL;
-					}
-					agarre = new btPoint2PointConstraint(*cuerpo, btVector3(0, 0, 0));
-					cuerpo->clearForces();
-					btVector3 restriccionRotacion(1, 1, 1);  // Restringe la rotación en el eje Y
-					cuerpo->setAngularFactor(restriccionRotacion);
-				}
+				cuerpoSeleccionado->setLinearVelocity(btVector3(0.0f, 0.0f, 0.0f));
+				cuerpoSeleccionado->setAngularVelocity(btVector3(0.0f, 0.0f, 0.0f));
+				agarre->setPivotB(convertirGLM2Bullet(camera.Position) + convertirGLM2Bullet(camera.Front * (float)2.0));
 			}
-
-
-
 		}
 
 		//Renderizado de la escena
@@ -413,15 +299,11 @@ int main()
 		//Para dibujar las lineas de colisión 
 #ifdef DEBUG
 		MyScene.physicsManager->dynamicsWorld->debugDrawWorld();
+		double fps = calculateFPS(currentFrame, nbFrames);
+		UI_FPS(fps);
 #endif // DEBUG
 
-
-		double fps = calculateFPS(lastTime, nbFrames);
-
-		//UI_FPS(fps);
 		UI_Position(camera.Position);
-
-
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		glfwSwapBuffers(window);
@@ -432,6 +314,45 @@ int main()
 
 	phyManager.collisionShapes.clear();
 	return 0;
+}
+
+void activarMotorPuerta(btHingeConstraint* hingeConstraint, btVector3 position, btRigidBody* body)
+{
+	if (position.getX() < 3.5)
+	{
+		hingeConstraint->enableAngularMotor(true, -0.7f, 0.5f); // Velocidad	
+	}
+
+	if (position.getX() > 3.5)
+	{
+		hingeConstraint->enableAngularMotor(true, 0.7f, 0.5f); // Velocidad
+	}
+	if (std::abs(position.getX() - 3.5) < 0.01)
+	{
+		body->setLinearVelocity(btVector3(0, 0, 0));
+		hingeConstraint->enableAngularMotor(false, 1.0f, 0.5f); // Velocidad
+	}
+}
+
+void limitarPersonaje(btRigidBody* body)
+{
+	// Obtener la velocidad actual
+	btVector3 velocidadActual = body->getLinearVelocity();
+	btVector3 velocidadTemp = body->getLinearVelocity();
+
+	// Calcular la magnitud de la velocidad actual
+	float limiteVelocidad = 3.0f;  // Ajusta según sea necesario
+	if (velocidadActual.length() > limiteVelocidad)
+	{
+		// Normalizar la velocidad actual y multiplicar por el límite
+		velocidadActual = velocidadActual.normalized() * limiteVelocidad;
+		velocidadActual.setY(velocidadTemp.getY());
+		// Establecer la velocidad limitada al 
+		body->setLinearVelocity(velocidadActual);
+	}
+
+	// Ajustar la fricción lineal y angular
+	body->setFriction(2.5f);  // Ajusta este valor según sea necesario
 }
 
 void processInput(GLFWwindow* window)
@@ -470,9 +391,33 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 			break;
 		case GLFW_KEY_F:
 			if (constraint)
+			{
 				phyManager.dynamicsWorld->removeConstraint(agarre);
+				delete agarre;
+				agarre = NULL;
+				cuerpoSeleccionado = nullptr;
+			}
 			else
-				phyManager.dynamicsWorld->addConstraint(agarre, true);
+			{
+				btVector3 origenRayo = convertirGLM2Bullet(camera.Position);
+				float scalar = 3;
+				btVector3 destinoRay2 = origenRayo + convertirGLM2Bullet(camera.Front * scalar);
+
+				btRigidBody* cuerpo = nullptr;
+				phyManager.rayCast(origenRayo, destinoRay2, cuerpo);
+				if (cuerpo)
+				{
+					cuerpoSeleccionado = cuerpo;
+					agarre = new btPoint2PointConstraint(*cuerpo, btVector3(0, 0, 0));
+					phyManager.dynamicsWorld->addConstraint(agarre, true);
+				}
+				else
+				{
+					cuerpoSeleccionado = nullptr;
+					break;
+				}
+
+			}
 			constraint = !constraint;
 			break;
 		case GLFW_KEY_SPACE:
@@ -492,9 +437,83 @@ void configurePhysicsDebugger(Shader& LineDebug)
 	physicsDebugger->setDebugMode(1);
 }
 
+void agregarRigidbodiesAula(Model M_Room)
+{
+	std::vector<btConvexHullShape*> CollShapes;
+	std::vector< Rigidbody> R_Room;
+	for (int i = 0; i < M_Room.meshes.size(); i++)
+	{
+		CollShapes.push_back(obtenerMallaColision(M_Room.meshes[i]));
+		if (CollShapes.back())
+		{
+			R_Room.push_back(Rigidbody(CollShapes.back(), 0, btVector3(0, 0, 0)));
+			MyScene.physicsManager->addRigidBody(&R_Room.back());
+		}
+		else
+		{
+			CollShapes.pop_back();
+		}
+	}
+}
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
 	camera.windowSize = { width,height };
 	glViewport(0, 0, width, height);
 
+}
+//Función para obtener los fps
+double calculateFPS(double& lastTime, int& nbFrames) {
+	// Obtener el tiempo actual
+	double currentTime = glfwGetTime();
+	// Calcular los milisegundos transcurridos desde el último render
+	double delta = currentTime - lastTime;
+	// Calcular el número de frames por segundo
+	double fps = static_cast<double>(nbFrames) / delta;
+	// Reiniciar el conteo para el siguiente segundo
+	nbFrames = 0;
+	lastTime = currentTime;
+	// Incrementar el contador de frames
+	nbFrames++;
+	return fps;
+}
+
+inline btVector3 convertirGLM2Bullet(const glm::vec3& glmVector) {
+	return btVector3(glmVector.x, glmVector.y, glmVector.z);
+}
+
+inline glm::vec3 convertirBullet2GLM(const btVector3& btVector) {
+	return glm::vec3(btVector.x(), btVector.y(), btVector.z());
+}
+
+btConvexHullShape* obtenerMallaColision(Mesh mesh)
+{
+	std::vector<btVector3> vertices;
+	btConvexHullShape* CS_Convex = new btConvexHullShape();
+	if (mesh.vertices.size() > 2000)
+	{
+		return nullptr;
+	}
+	for (int i = 0; i < mesh.vertices.size(); i++)
+	{
+		btVector3 temp = convertirGLM2Bullet(mesh.vertices.at(i).Position);
+		CS_Convex->addPoint(temp);
+	}
+	CS_Convex->recalcLocalAabb();
+	return CS_Convex;
+}
+
+btRigidBody* obtenerCuerpoPorID(PhysicsManager& physicsManager, int identificadorUnico) {
+	// Recorre todos los cuerpos rígidos en tu sistema
+	for (int i = 0; i < physicsManager.rigidbodies.size(); ++i) {
+		btRigidBody* cuerpoActual = physicsManager.rigidbodies[i];
+
+		// Verifica si el user pointer del cuerpo coincide con el identificador único
+		if (reinterpret_cast<intptr_t>(cuerpoActual->getUserPointer()) == identificadorUnico) {
+			return cuerpoActual;
+		}
+	}
+
+	// Retorna nullptr si no se encuentra ningún cuerpo con el identificador
+	return nullptr;
 }

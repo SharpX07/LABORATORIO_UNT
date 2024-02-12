@@ -28,5 +28,5 @@ public:
 
     // Agrega un cuerpo rígido al mundo de física
     void addRigidBody(Rigidbody* rgbody);
-    bool rayCast(const btVector3& desde, const btVector3& hacia, int& identificadorGolpeado) const;
+    bool rayCast(const btVector3& desde, const btVector3& hacia,  btRigidBody*& cuerpoGolpeado)const;
 };

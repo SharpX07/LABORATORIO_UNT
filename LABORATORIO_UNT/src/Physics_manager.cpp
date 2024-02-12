@@ -19,7 +19,7 @@ void PhysicsManager::addRigidBody(Rigidbody* rgbody)
     dynamicsWorld->addRigidBody(rgbody->Body);
 }
 
-bool PhysicsManager::rayCast(const btVector3& desde, const btVector3& hacia, int& identificadorGolpeado) const
+bool PhysicsManager::rayCast(const btVector3& desde, const btVector3& hacia, btRigidBody*& cuerpoGolpeado) const
 {
     // Crear un rayo
     btCollisionWorld::ClosestRayResultCallback rayCallback(desde, hacia);
@@ -30,20 +30,23 @@ bool PhysicsManager::rayCast(const btVector3& desde, const btVector3& hacia, int
     // Verificar si hubo intersección
     if (rayCallback.hasHit()) {
         // Se ha golpeado algo
-        const btRigidBody* cuerpoGolpeado = static_cast<const btRigidBody*>(rayCallback.m_collisionObject);
+        const btCollisionObject* objetoGolpeado = rayCallback.m_collisionObject;
 
-        // Recuperar el user pointer para obtener el identificador único
-        identificadorGolpeado = static_cast<int>(reinterpret_cast<intptr_t>(cuerpoGolpeado->getUserPointer()));
+        // Quitar la constante utilizando const_cast y luego realizar el dynamic_cast
+        cuerpoGolpeado = const_cast<btRigidBody*>(btRigidBody::upcast(objetoGolpeado));
 
         // Devolver true para indicar que se ha golpeado un cuerpo
         return true;
     }
     else {
         // No se ha golpeado nada
-        identificadorGolpeado = -1; // Otra señal de que no se golpeó ningún cuerpo
+        cuerpoGolpeado = nullptr; // Indicar que no se golpeó ningún cuerpo
         return false;
     }
 }
+
+
+
 
 
 
