@@ -131,7 +131,7 @@ int main()
 	Instance I_Room = Instance(&A_Room);
 	MyScene.addInstance(&I_Room);
 
-	Model M_Tierra("models/tierra.gltf");
+	Model M_Tierra("models/ico.gltf");
 	Asset A_Tierra = Asset(&staticshader, &M_Tierra);
 	Instance I_Tierra = Instance(&A_Tierra, "Esfera");
 	MyScene.addInstance(&I_Tierra);
