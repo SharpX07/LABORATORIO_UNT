@@ -6,6 +6,7 @@
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+// Constructor de GLDebugDrawer
 GLDebugDrawer::GLDebugDrawer()
 {
     // set up vertex data (and buffer(s)) and configure vertex attributes
@@ -25,6 +26,7 @@ GLDebugDrawer::GLDebugDrawer()
     glBindVertexArray(0);
 }
 
+// Método para dibujar una línea
 void GLDebugDrawer::drawLine(const btVector3& from, const btVector3& to, const btVector3& color)
 {
     float vertices[] = {
@@ -32,17 +34,16 @@ void GLDebugDrawer::drawLine(const btVector3& from, const btVector3& to, const b
         to.x(), to.y(), to.z()
     };
 
-    // Assuming MAX_LINES is the maximum number of lines you'll draw in one go
-    
     allVertices.insert(allVertices.end(), std::begin(vertices), std::end(vertices));
 
-    // Check if you've reached the maximum lines before flushing the buffer
+    // Verificar si se ha alcanzado el número máximo de líneas antes de vaciar el búfer
     if (allVertices.size() / 6 >= 10000000)
     {
         flushLines();
     }
 }
 
+// Método para vaciar y dibujar las líneas acumuladas
 void GLDebugDrawer::flushLines()
 {
     shaderDebug->use();
@@ -52,47 +53,36 @@ void GLDebugDrawer::flushLines()
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
-    // Transfer all vertices to the GPU
+    // Transferir todos los vértices a la GPU
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * allVertices.size(), allVertices.data());
 
-    // Draw all lines
+    // Dibujar todas las líneas
     glDrawArrays(GL_LINES, 0, allVertices.size() / 3);
 
-    // Clear the buffer for the next set of lines
+    // Limpiar el búfer para el próximo conjunto de líneas
     allVertices.clear();
 
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void    GLDebugDrawer::setDebugMode(int debugMode)
+// Método para configurar el modo de depuración
+void GLDebugDrawer::setDebugMode(int debugMode)
 {
-	m_debugMode = debugMode;
+    m_debugMode = debugMode;
 }
 
-void    GLDebugDrawer::draw3dText(const btVector3& location, const char* textString)
+void GLDebugDrawer::draw3dText(const btVector3& location, const char* textString)
 {
-	//glRasterPos3f(location.x(),  location.y(),  location.z());
-	//BMF_DrawString(BMF_GetFont(BMF_kHelvetica10),textString);
 }
 
-void    GLDebugDrawer::reportErrorWarning(const char* warningString)
+// Método para reportar errores y advertencias (en consola)
+void GLDebugDrawer::reportErrorWarning(const char* warningString)
 {
-	printf(warningString);
+    printf(warningString);
 }
 
-void    GLDebugDrawer::drawContactPoint(const btVector3& pointOnB, const btVector3& normalOnB, btScalar distance, int lifeTime, const btVector3& color)
+// Método para dibujar puntos de contacto (sin implementación)
+void GLDebugDrawer::drawContactPoint(const btVector3& pointOnB, const btVector3& normalOnB, btScalar distance, int lifeTime, const btVector3& color)
 {
-	{
-		//btVector3 to=pointOnB+normalOnB*distance;
-		//const btVector3&from = pointOnB;
-		//glColor4f(color.getX(), color.getY(), color.getZ(), 1.0f);   
-
-		//GLDebugDrawer::drawLine(from, to, color);
-
-		//glRasterPos3f(from.x(),  from.y(),  from.z());
-		//char buf[12];
-		//sprintf(buf," %d",lifeTime);
-		//BMF_DrawString(BMF_GetFont(BMF_kHelvetica10),buf);
-	}
 }

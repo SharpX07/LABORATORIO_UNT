@@ -39,9 +39,6 @@
     <ClCompile Include="src\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\Instance.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\Asset.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -60,10 +57,7 @@
     <ClCompile Include="src\GLDebugDrawer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Pendulum.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Spring.cpp">
+    <ClCompile Include="src\Instance.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -113,9 +107,6 @@
     <ClInclude Include="libraries\GameRender\Asset.h">
       <Filter>Header Files\GameRender</Filter>
     </ClInclude>
-    <ClInclude Include="libraries\Commons\json_configs.h">
-      <Filter>Header Files\Commons</Filter>
-    </ClInclude>
     <ClInclude Include="libraries\Commons\input_movement.h">
       <Filter>Header Files\Commons</Filter>
     </ClInclude>
@@ -137,12 +128,6 @@
     <ClInclude Include="libraries\Commons\debug_ui.h">
       <Filter>Header Files\Commons</Filter>
     </ClInclude>
-    <ClInclude Include="libraries\GameObjects\Pendulum.h">
-      <Filter>Header Files\GameObjects</Filter>
-    </ClInclude>
-    <ClInclude Include="libraries\GameObjects\Spring.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="libraries\Commons\imgui_UI.h">
       <Filter>Header Files\Commons</Filter>
     </ClInclude>
@@ -163,12 +148,6 @@
     <None Include="shaders\anim_model.vs">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="shaders\gun.fs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="shaders\gun.vs">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="shaders\lightF.fs">
       <Filter>Resource Files</Filter>
     </None>
@@ -181,5 +160,9 @@
     <None Include="shaders\simplecolor.vs">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="shaders\proyeccion.fs" />
+    <None Include="shaders\proyeccion.vs" />
+    <None Include="shaders\Puerta.fs" />
+    <None Include="shaders\Puerta.vs" />
   </ItemGroup>
 </Project>

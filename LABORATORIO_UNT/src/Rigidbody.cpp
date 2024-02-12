@@ -1,38 +1,43 @@
 #include "GameLogic/Rigidbody.h"
 
+// Constructor de Rigidbody
 Rigidbody::Rigidbody(btCollisionShape* CollisionShape, btScalar Mass, btVector3 Position)
 {
-	this->Mass = Mass;
-	this->CollisionShape = CollisionShape;
-	Transform.setIdentity();
-	Transform.setOrigin(Position);
-		//rigidbody is dynamic if and only if mass is non zero, otherwise static
-	bool isDynamic = (this->Mass != 0.f);
-	LocalInertia = btVector3(0, 0, 0);
-	if (isDynamic)
-		this->CollisionShape->calculateLocalInertia(this->Mass, LocalInertia);
+    // Inicialización de propiedades
+    this->Mass = Mass;
+    this->CollisionShape = CollisionShape;
+    Transform.setIdentity();
+    Transform.setOrigin(Position);
 
-	//using motionstate is optional, it provides interpolation capabilities, and only synchronizes 'active' objects
-	MotionState = new btDefaultMotionState(Transform);
-	btRigidBody::btRigidBodyConstructionInfo rbInfo(this->Mass, MotionState, this->CollisionShape, LocalInertia);
-	Body = new btRigidBody(rbInfo);
+    // Verifica si el cuerpo rígido es dinámico
+    bool isDynamic = (this->Mass != 0.f);
+
+    LocalInertia = btVector3(0, 0, 0);
+    if (isDynamic)
+        this->CollisionShape->calculateLocalInertia(this->Mass, LocalInertia);
+
+    MotionState = new btDefaultMotionState(Transform);
+    btRigidBody::btRigidBodyConstructionInfo rbInfo(this->Mass, MotionState, this->CollisionShape, LocalInertia);
+    Body = new btRigidBody(rbInfo);
 }
 
+// Establece la posición del cuerpo rígido
 void Rigidbody::setPosition(btVector3 newPosition)
 {
-	//btVector3 newPosition(1, 2, 3); // Nueva posición
-	btTransform newTransform;
-	newTransform.setIdentity();
-	newTransform.setOrigin(newPosition);
+    btTransform newTransform;
+    newTransform.setIdentity();
+    newTransform.setOrigin(newPosition);
 
-	Body->getMotionState()->setWorldTransform(newTransform);
-	Body->setCenterOfMassTransform(newTransform);
+    // Actualiza el estado de movimiento y la transformación del centro de masa
+    Body->getMotionState()->setWorldTransform(newTransform);
+    Body->setCenterOfMassTransform(newTransform);
 }
 
+// Obtiene la posición actual del cuerpo rígido
 btVector3 Rigidbody::getPosition()
 {
-	btTransform currentTransform;
-	Body->getMotionState()->getWorldTransform(currentTransform);
+    btTransform currentTransform;
+    Body->getMotionState()->getWorldTransform(currentTransform);
 
-	return currentTransform.getOrigin();
+    return currentTransform.getOrigin();
 }

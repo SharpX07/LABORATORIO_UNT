@@ -1,10 +1,13 @@
-#pragma message("MYMACRO == " ProjectDir)
+//#pragma message("MYMACRO == " ProjectDir)
+
 
 #define STB_IMAGE_IMPLEMENTATION
 #define GLFW_INCLUDE_NONE
 #define SCREEN_X 1200
 #define SCREEN_Y 600
+#define DEBUG
 
+// Inclusión de librerías externas
 #include <iostream>
 #include "bullet/btBulletDynamicsCommon.h"
 #include <glad/glad.h>
@@ -12,6 +15,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+
+// Inclusión de librerias propias
 #include <GameRender/animator.h>
 #include <GameRender/camera.h>
 #include <GameRender/model_animation.h>
@@ -20,7 +25,6 @@
 #include <GameRender/Asset.h>
 #include <GameRender/Instance.h>
 #include <GameObjects/Light.h>
-#include <GameObjects/Pendulum.h>
 #include <Commons/glad_glfw_helpers.h>
 #include <Commons/debug_helpers.h>
 #include <Commons/imgui_UI.h>
@@ -31,20 +35,27 @@
 #include <chrono>
 #include <random>
 #include <Commons/debug_ui.h>
-#include <GameObjects/Spring.h>
 
+// Declaración de funciones
 void processInput(GLFWwindow* window);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
-string DirPath = ProjectDir;
+void configurePhysicsDebugger(Shader& lineShader);
+
+
+// Declaración de variables globales
 Scene MyScene;
 Camera camera;
 double deltaTime;
 bool ActiveMenu = false;
-
-GLDebugDrawer* drw2ahorasi;
-
+bool constraint = true;
+// GLDebugDrawer sirve para dibujar lineas en los cuerpos de las fisicas y para ver sus mallas de colisión
+GLDebugDrawer* physicsDebugger;
+btRigidBody* rigidBodyPersonaje;
+btPoint2PointConstraint* agarre;
+PhysicsManager phyManager = PhysicsManager();
+//Función para obtener los fps
 double calculateFPS(double& lastTime, int& nbFrames) {
 	// Obtener el tiempo actual
 	double currentTime = glfwGetTime();
@@ -59,341 +70,376 @@ double calculateFPS(double& lastTime, int& nbFrames) {
 	nbFrames++;
 	return fps;
 }
-btRigidBody* rigidBodyPersonaje;
+
+inline btVector3 convertirGLMtoBullet(const glm::vec3& glmVector) {
+	return btVector3(glmVector.x, glmVector.y, glmVector.z);
+}
+
+btConvexHullShape* obtenerMallaColision(Mesh mesh)
+{
+	std::vector<btVector3> vertices;
+	btConvexHullShape* CS_Convex = new btConvexHullShape();
+	if (mesh.vertices.size() > 2000)
+	{
+		return nullptr;
+	}
+	for (int i = 0; i < mesh.vertices.size(); i++)
+	{
+		btVector3 temp = convertirGLMtoBullet(mesh.vertices.at(i).Position);
+		CS_Convex->addPoint(temp);
+	}
+	CS_Convex->recalcLocalAabb();
+	return CS_Convex;
+}
+
+btRigidBody* obtenerCuerpoPorID(PhysicsManager& physicsManager, int identificadorUnico) {
+	// Recorre todos los cuerpos rígidos en tu sistema
+	for (int i = 0; i < physicsManager.rigidbodies.size(); ++i) {
+		btRigidBody* cuerpoActual = physicsManager.rigidbodies[i];
+
+		// Verifica si el user pointer del cuerpo coincide con el identificador único
+		if (reinterpret_cast<intptr_t>(cuerpoActual->getUserPointer()) == identificadorUnico) {
+			return cuerpoActual;
+		}
+	}
+
+	// Retorna nullptr si no se encuentra ningún cuerpo con el identificador
+	return nullptr;
+}
+
+
 int main()
 {
-	if (!inicializeGLFW())
+	// Inicialización de GLFW y creación de la ventana
+	if (!initializeGLFW())
 		return -1;
 
-	// glfw window creation
-	// --------------------
 	GLFWwindow* window = glfwCreateWindow(SCREEN_X, SCREEN_Y, "LearnOpenGL", NULL, NULL);
 
 	if (!windowCreated(window))
 		return -1;
-
+	// Configuración de la ventana y contexto OpenGL
 	glfwMakeContextCurrent(window);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetKeyCallback(window, key_callback);
 
-	// glad: load all OpenGL function pointers
-	// ---------------------------------------
-	if (!inicializeGlad())
+	// Carga de funciones de OpenGL con Glad
+	if (!initializeGlad())
 		return -1;
-
-	// Setup Dear ImGui context
+	stbi_set_flip_vertically_on_load(true);
+	// Configuración de ImGui
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
-	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-	// Setup Dear ImGui style
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 	ImGui::StyleColorsDark();
-	// Setup Platform/Renderer backends
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init("#version 130");
 
 	float i = 0.0;
 
-	// configure global opengl state
-	// -----------------------------
+	// Configuración de OpenGL
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_MULTISAMPLE);
-	Shader staticshader((DirPath + "/shaders/1.model_loading.vs").c_str(), (DirPath + "shaders/1.model_loading.fs").c_str());
-	Shader LineDebug((DirPath + "shaders/gun.vs").c_str(), (DirPath + "shaders/gun.fs").c_str());
-	Shader simplecolor((DirPath + "shaders/simplecolor.vs").c_str(), (DirPath + "shaders/simplecolor.fs").c_str());
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+	//glFrontFace(GL_CW);
 
-	//Modelos
-	Model M_Room(DirPath + "models/room.gltf");
-	Model simplebox(DirPath + "models/simplebox.obj");
-	Model M_Resorte(DirPath + "models/resorte.gltf");
-	Model M_Peso(DirPath + "models/peso.gltf");
-	Model M_PenduloBase(DirPath + "models/pendulo_base.gltf");
-	Model M_PenduloSoga(DirPath + "models/pendulo_soga.gltf");
-	Model M_PenduloBola(DirPath + "models/pendulo_bola.gltf");
-	//Assets
-	Asset A_Box = Asset(&staticshader, &simplebox);
-	Asset A_Resorte = Asset(&staticshader, &M_Resorte);
-	Asset A_Peso = Asset(&staticshader, &M_Peso);
+	// Creación de shaders y modelos
+	Shader puertaShader("shaders/puerta.vs", "shaders/puerta.fs");
+	Shader staticshader("shaders/1.model_loading.vs", "shaders/1.model_loading.fs");
+	Shader LineDebug("shaders/gun.vs", "shaders/gun.fs");
+	Shader simplecolor("shaders/simplecolor.vs", "shaders/simplecolor.fs");
+	Shader plana("shaders/proyeccion.vs", "shaders/proyeccion.fs");
+
+	Model M_Room("models/clase.gltf");
 	Asset A_Room = Asset(&staticshader, &M_Room);
-	Asset A_PenduloBase(&staticshader, &M_PenduloBase);
-	Asset A_PenduloSoga(&staticshader, &M_PenduloSoga);
-	Asset A_PenduloBola(&staticshader, &M_PenduloBola);
-
-	//Instancias
-	Instance I_Luz = Instance(&A_Box);
-	Instance I_Resorte = Instance(&A_Resorte);
-	Instance I_Peso = Instance(&A_Peso);
 	Instance I_Room = Instance(&A_Room);
-	Instance I_PenduloBase = Instance(&A_PenduloBase);
-	Instance I_PenduloSoga = Instance(&A_PenduloSoga);
-	Instance I_PenduloBola = Instance(&A_PenduloBola);
-	Instance I_PenduloOrigin = Instance(&A_PenduloBola);
+	MyScene.addInstance(&I_Room);
+
+	Model M_Tierra("models/tierra.gltf");
+	Asset A_Tierra = Asset(&plana, &M_Tierra);
+	Instance I_Tierra = Instance(&A_Tierra, "Esfera");
+	MyScene.addInstance(&I_Tierra);
+
+	Model M_Cubo("models/ico.gltf");
+	Asset A_Cubo = Asset(&plana, &M_Cubo);
+	Instance I_Cubo = Instance(&A_Cubo, "Cubo");
+	MyScene.addInstance(&I_Cubo);
+	
+	Model M_Texto("models/Boton.gltf");
+	Asset A_Texto = Asset(&staticshader, &M_Texto);
+	Instance I_Texto = Instance(&A_Texto);
+	MyScene.addInstance(&I_Texto);
+
+	Model M_Puerta("models/puerta.gltf");
+	Asset A_Puerta = Asset(&puertaShader, &M_Puerta);
+	Instance I_Puerta = Instance(&A_Puerta);
+	I_Puerta.scale = { 1,1,1.1 };
+	MyScene.addInstance(&I_Puerta);
+	// Creación de assets e instancias
 
 
+
+	// Configuración de luces y cámara
 	Light light({ 0.0f, 50.0f, 20.0f }, { 255, 255, 255 });
-
 	camera = Camera(glm::vec3(0.0f, 0.0f, 3.0f));
 	camera.windowSize = { SCREEN_X, SCREEN_Y };
 	camera.Zoom = 80;
 	camera.MovementSpeed = 100;
 
+	// Agregar elementos a la escena
 	MyScene.camera = &camera;
-	MyScene.addInstance(&I_Resorte);
-	MyScene.addInstance(&I_Peso);
-	MyScene.addInstance(&I_Room);
-	MyScene.addInstance(&I_PenduloSoga);
-	MyScene.addInstance(&I_PenduloBase);
-	MyScene.addInstance(&I_PenduloBola);
-	//MyScene.addInstance(&I_PenduloOrigin);
-
-	I_Resorte.Position = { 3.7,4,-1.4 };
-	I_PenduloBase.Position = { 3.7,0.8,-1.4 };
-	I_PenduloBase.Rotation = glm::quat(glm::vec3(0, glm::radians(-90.0f), 0));
-	I_PenduloSoga.Position = { 3.7,0.8 + 0.955263,-1.4 };
-	//I_PenduloBola.Position = { 3.7,0.8 + 0.655263,-1.4 };
 	MyScene.addLight(&light);
 
-	PhysicsManager phyManager = PhysicsManager();
+	// Configuración del motor de física
+	physicsDebugger = new GLDebugDrawer();
 	MyScene.physicsManager = &phyManager;
+	phyManager.dynamicsWorld->setGravity(btVector3(0, -9.80, 0));
+
+	// Creación de formas de colisión y rigidbodies
+
+	I_Puerta.Position = { 3.5,1.55 ,-1.3492 - 0.825405 };
+	btCollisionShape* CS_Puerta = new btBoxShape(btVector3(0.04, 1.5, 0.811305));
+	Rigidbody R_Puerta(CS_Puerta, 10, convertirGLMtoBullet(I_Puerta.Position + glm::vec3(0, 0, 0)));
+	R_Puerta.Body->setFriction(0.5f);
+	MyScene.physicsManager->addRigidBody(&R_Puerta);
+	btVector3 axis(0, 0, 1); // Eje de rotación vertical
+	btTransform frameInA;
+	frameInA = btTransform::getIdentity();
+	frameInA.setOrigin(btVector3(0, 0, 0.81)); // Punto de conexión en la puerta
+	btQuaternion rotationQuat;
+	rotationQuat.setRotation(btVector3(1, 0, 0), btScalar(SIMD_PI / 2.0));
+	frameInA.setRotation(rotationQuat);
+	btHingeConstraint* hingeConstraint = new btHingeConstraint(*R_Puerta.Body, frameInA, true);
+	phyManager.dynamicsWorld->addConstraint(hingeConstraint);
+	I_Puerta.rigidBody = &R_Puerta;
 
 	btCollisionShape* CS_Personaje = new btCapsuleShape(0.3, 1.7);
-	btCollisionShape* CS_Piso = new btBoxShape(btVector3(10, 0.1, 10));
-	btCollisionShape* CS_Pared1 = new btBoxShape(btVector3(0.5, 2, 5));
-	btCollisionShape* CS_Pared2 = new btBoxShape(btVector3(5, 2, 0.5));
-	btCollisionShape* CS_Pared3 = new btBoxShape(btVector3(0.5, 2, 5));
-	btCollisionShape* CS_Pared4 = new btBoxShape(btVector3(5, 2, 0.5));
-
-	Rigidbody R_Piso(CS_Piso, 0, btVector3(0, 0, 0));
-	Rigidbody R_Pared1(CS_Pared1, 0, btVector3(0, 3, 0));
-	Rigidbody R_Pared2(CS_Pared2, 0, btVector3(3, 3, -5));
-	Rigidbody R_Pared3(CS_Pared3, 0, btVector3(7.5, 3, 0));
-	Rigidbody R_Pared4(CS_Pared4, 0, btVector3(3, 3, 3));
-
-	Rigidbody R_Personaje(CS_Personaje, 1, btVector3(3.6, 1, 2));
-	MyScene.physicsManager->addRigidBody(&R_Piso);
-	MyScene.physicsManager->addRigidBody(&R_Pared1);
-	MyScene.physicsManager->addRigidBody(&R_Pared2);
-	MyScene.physicsManager->addRigidBody(&R_Pared3);
-	MyScene.physicsManager->addRigidBody(&R_Pared4);
+	Rigidbody R_Personaje(CS_Personaje, 75, btVector3(1, 0, 2));
 	MyScene.physicsManager->addRigidBody(&R_Personaje);
 
+	btCollisionShape* CS_Cubo = new btBoxShape(btVector3(0.25, 0.25, 0.25));
+	Rigidbody R_Cubo(CS_Cubo, 10, btVector3(0, 2, 0));
+	MyScene.physicsManager->addRigidBody(&R_Cubo);
+
+	btConvexHullShape* CS_Esfera = obtenerMallaColision(M_Tierra.meshes[0]);
+	Rigidbody R_Esfera(CS_Esfera, 10, btVector3(0, 1, 0));
+	MyScene.physicsManager->addRigidBody(&R_Esfera);
+
+	std::vector<btConvexHullShape*> CollShapes;
+	std::vector< Rigidbody> R_Room;
+	for (int i = 0; i < M_Room.meshes.size(); i++)
+	{
+		CollShapes.push_back(obtenerMallaColision(M_Room.meshes[i]));
+		if (CollShapes.back())
+		{
+			R_Room.push_back(Rigidbody(CollShapes.back(), 0, btVector3(0, 0, 0)));
+			MyScene.physicsManager->addRigidBody(&R_Room.back());
+		}else
+		{
+			CollShapes.pop_back();
+		}
+	}
+
+	R_Esfera.Body->setUserPointer((void*)(intptr_t)I_Tierra.ID);
+	R_Cubo.Body->setUserPointer((void*)(intptr_t)I_Cubo.ID);
+
+
+
+	I_Cubo.rigidBody = &R_Cubo;
 	rigidBodyPersonaje = R_Personaje.Body;
+	I_Tierra.rigidBody = &R_Esfera;
 	btVector3 restriccionRotacion(0, 0, 0);  // Restringe la rotación en el eje Y
 	R_Personaje.Body->setAngularFactor(restriccionRotacion);
 
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-	// render loop
-	// -----------
-	// run the main loop
+	phyManager.dynamicsWorld->setDebugDrawer(physicsDebugger);
+	agarre = new btPoint2PointConstraint(*R_Cubo.Body, btVector3(0, 0, 0));
+	phyManager.dynamicsWorld->addConstraint(agarre, true);
 
-	phyManager.dynamicsWorld->setGravity(btVector3(0, -9.80, 0));
-
-	auto seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
-	std::mt19937 generator(static_cast<unsigned int>(seed));
-	// Generar y mostrar un número aleatorio en el rango de 50 a -50
-	std::uniform_int_distribution<int> distribution(-0, 0);
-
-	drw2ahorasi = new GLDebugDrawer();
-	drw2ahorasi->camera = &camera;
-	drw2ahorasi->shaderDebug = &LineDebug;
-	drw2ahorasi->DBG_DrawWireframe; // this breaks when I run the app
-	drw2ahorasi->setDebugMode(btIDebugDraw::DBG_DrawWireframe); // so does this
-	phyManager.dynamicsWorld->setDebugDrawer(drw2ahorasi);
-	drw2ahorasi->setDebugMode(1); // this doesn't
-
+	// Inicialización de depurador de física
+	configurePhysicsDebugger(LineDebug);
 	bool running = true;
 	double currentFrame = glfwGetTime();
 	double lastFrame = currentFrame;
 
 	double lastTime = glfwGetTime();
 	int nbFrames = 0;
-	camera.Position = { 0,0,2 };
 
-	I_PenduloOrigin.Position = { 3.7, 1.11 + 0.655263, -1.4 };
-	Pendulum exp_pendullum = Pendulum(glm::vec3(3.7, -(1.11 + 0.655263), -1.4), SIMD_PI / 4, 0.6, 9.8);
-
-
-	Spring exp_spring = Spring(glm::vec3(3.7, 3, -1.4), 9.8, 1, 6);
-
-
-	std::vector<float> arr;
+	//Bucle principal
 	while (running)
 	{
+		R_Cubo.Body->activate();
+		R_Esfera.Body->activate();
+		R_Puerta.Body->activate();
+		// Se mantiene al punto de luz justo encima de la camara
 		light.position = camera.Position + glm::vec3(0, 3, 0);
-		// handle events
+
 		currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
+
+		// Manejo de eventos
 		glfwPollEvents();
+
 		if (glfwWindowShouldClose(window))
 			running = false;
 
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
-
+		btTransform transform = R_Puerta.Body->getWorldTransform();
+		btVector3 rotation = transform.getOrigin();
+		// Si se presiona escape entonces no se puede mover nada en la escena, el mouse se encuentra libre
 		if (!ActiveMenu)
 			processInput(window);
 		if (!ActiveMenu)
 		{
+			float springConstant = 100.0f; // Constante del resorte
+			float targetAngle = SIMD_HALF_PI;    // Ángulo deseado de cerrado
+			float currentAngle = hingeConstraint->getHingeAngle();
+			float torque = springConstant * (targetAngle - currentAngle);
+
+			if (rotation.getX() < 3.5)
+			{
+				hingeConstraint->enableAngularMotor(true, -0.7f, 0.5f); // Velocidad	
+			}
+
+			if (rotation.getX() > 3.5)
+			{
+				hingeConstraint->enableAngularMotor(true, 0.7f, 0.5f); // Velocidad
+			}
+			if (std::abs(rotation.getX() - 3.5) < 0.01)
+			{
+				R_Puerta.Body->setLinearVelocity(btVector3(0, 0, 0));
+				hingeConstraint->enableAngularMotor(false, 1.0f, 0.5f); // Velocidad
+			}
+
+			//R_Puerta.Body->applyTorque(axis * torque);
+
 			R_Personaje.Body->activate();
 			btVector3 fuerza(0.0, 0.0, 0.0);
 			// Aplicar fuerza al RigidBody
-			float force = 40.0f;
+			float force = 4000.0f;
+			glm::vec3 normF = glm::normalize(camera.Front);
+			glm::vec3 normR = glm::normalize(camera.Right);
+			//Movimiento con las teclas
 			if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-			{
-				fuerza.setX(camera.Front.x * force);
-				fuerza.setZ(camera.Front.z * force);
-			}
+				fuerza = btVector3(normF.x * force, 0, normF.z * force);
 			if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-			{
-				fuerza.setX(-camera.Right.x * force);
-				fuerza.setZ(-camera.Right.z * force);
-			}
+				fuerza = btVector3(-normR.x * force, 0, -normR.z * force);
 			if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-			{
-				fuerza.setX(-camera.Front.x * force);
-				fuerza.setZ(-camera.Front.z * force);
-			}
+				fuerza = btVector3(-normF.x * force, 0, -normF.z * force);
 			if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-			{
-				fuerza.setX(camera.Right.x * force);
-				fuerza.setZ(camera.Right.z * force);
-			}
+				fuerza = btVector3(normR.x * force, 0, normR.z * force);
+			if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+				A_Tierra.shader = &staticshader;
+			else
+				A_Tierra.shader = &plana;
 			// Obtener la velocidad actual
 			btVector3 velocidadActual = R_Personaje.Body->getLinearVelocity();
+			btVector3 velocidadTemp = R_Personaje.Body->getLinearVelocity();
 
 			// Calcular la magnitud de la velocidad actual
-			float magnitudVelocidad = velocidadActual.length();
-
-			// Limitar la velocidad si es necesario
 			float limiteVelocidad = 3.0f;  // Ajusta según sea necesario
-			if (magnitudVelocidad > limiteVelocidad)
+			if (velocidadActual.length() > limiteVelocidad)
 			{
 				// Normalizar la velocidad actual y multiplicar por el límite
 				velocidadActual = velocidadActual.normalized() * limiteVelocidad;
-
-				// Establecer la velocidad limitada al RigidBody
+				velocidadActual.setY(velocidadTemp.getY());
+				// Establecer la velocidad limitada al 
 				R_Personaje.Body->setLinearVelocity(velocidadActual);
 			}
 
 			// Ajustar la fricción lineal y angular
 			R_Personaje.Body->setFriction(2.5f);  // Ajusta este valor según sea necesario
-			// Aplicar fuerza al RigidBody
 			R_Personaje.Body->applyCentralForce(fuerza);
+
+			btVector3 origenRayo(camera.Position.x, camera.Position.y, camera.Position.z);
+			btVector3 destinoRay2(camera.Position.x + camera.Front.x * 2, camera.Position.y + camera.Front.y * 2, camera.Position.z + camera.Front.z * 2);
+
+			int identificadorGolpeado = -1;
+			destinoRay2 = btVector3(camera.Position.x + camera.Front.x * 3, camera.Position.y + camera.Front.y * 3, camera.Position.z + camera.Front.z * 3);
+			bool hit = phyManager.rayCast(origenRayo, destinoRay2, identificadorGolpeado);
+
+			btRigidBody* cuerpo = obtenerCuerpoPorID(phyManager, identificadorGolpeado);
+
+			if (constraint)
+				agarre->setPivotB(destinoRay2);
+
+			if (cuerpo)
+			{
+
+				if (constraint)
+				{
+					cuerpo->setLinearVelocity(btVector3(0, 0, 0));
+					cuerpo->setAngularVelocity(btVector3(0, 0, 0));
+				}
+				else
+				{
+					if (agarre != NULL)
+					{
+						delete agarre;
+						agarre = NULL;
+					}
+					agarre = new btPoint2PointConstraint(*cuerpo, btVector3(0, 0, 0));
+					cuerpo->clearForces();
+					btVector3 restriccionRotacion(1, 1, 1);  // Restringe la rotación en el eje Y
+					cuerpo->setAngularFactor(restriccionRotacion);
+				}
+			}
+
+
+
 		}
 
-
-		//Render
+		//Renderizado de la escena
 		glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		if (debugUI::activePhysics)
-			MyScene.update(1.0f / deltaTime, 1);
+		MyScene.update(1.0f / deltaTime, 1);
 
 		camera.Position = glm::vec3(R_Personaje.getPosition().x(),
-			R_Personaje.getPosition().y(),
+			R_Personaje.getPosition().y() + 0.70,
 			R_Personaje.getPosition().z());
+		// Dibujamos la escena
 		MyScene.draw();
 
-		draw_3daxis(simplecolor, camera);
-		//MyScene.physicsManager->dynamicsWorld->debugDrawWorld();
+		// Se dibujan los ejes
+		//draw_3daxis(simplecolor, camera);
 
-		static bool pause = false;
-		switch (UI_Menu())
-		{
-		case 0:
-			
-			if (arr.size() < 120)
-			{
-				arr.push_back(exp_pendullum.angle);
-			}
-			else
-			{
-				//arr.erase(arr.begin());
-				arr.push_back(exp_pendullum.angle);
-			}
-			I_Peso.isVisible = false;
-			I_Resorte.isVisible = false;
-			I_PenduloBase.isVisible = true;
-			I_PenduloSoga.isVisible = true;
-			I_PenduloBola.isVisible = true;
-
-			if(!pause)
-				exp_pendullum.update(deltaTime);
-			I_PenduloBola.Position = exp_pendullum.position;
-			I_PenduloSoga.scale = { 1,exp_pendullum.lenght*5/3 ,1 };
-			I_PenduloSoga.Rotation = glm::quat(glm::vec3(0, 0, glm::radians(-360.0) - exp_pendullum.angle));
-
-			if (ActiveMenu)
-			{
-				UI_Pendullum(exp_pendullum, arr,pause);
-			}
-			break;
-		case 1:
-			I_Peso.isVisible = true;
-			I_Resorte.isVisible = true;
-			I_PenduloBase.isVisible = false;
-			I_PenduloSoga.isVisible = false;
-			I_PenduloBola.isVisible = false;
-			if (ActiveMenu)
-			{
-				UI_Spring(&exp_spring);
-			}
-			exp_spring.update(deltaTime);
-			I_Resorte.scale = { 1,1 - exp_spring.displacement.y,1 };
-			I_Peso.Position = exp_spring.position;
-			I_Peso.scale = { 0.2 + exp_spring.mass * 1,0.2 + exp_spring.mass * 1 ,0.2 + exp_spring.mass * 1 };
-			break;
-		case 2:
-			break;
-		}
-
-
+		//Para dibujar las lineas de colisión 
+#ifdef DEBUG
+		MyScene.physicsManager->dynamicsWorld->debugDrawWorld();
+#endif // DEBUG
 
 
 		double fps = calculateFPS(lastTime, nbFrames);
 
-
-		UI_FPS(fps);
+		//UI_FPS(fps);
 		UI_Position(camera.Position);
 
-		//debugUI::debug_pendulum();
 
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		glfwSwapBuffers(window);
-		i += 0.001f;
 	}
 
 	glfwDestroyWindow(window);
 	glfwTerminate();
 
-	//next line is optional: it will be cleared by the destructor when the array goes out of scope
 	phyManager.collisionShapes.clear();
 	return 0;
 }
 
 void processInput(GLFWwindow* window)
 {
-	/*if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-		MyScene.camera->ProcessKeyboard(FORWARD, deltaTime);
-	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-		MyScene.camera->ProcessKeyboard(LEFT, deltaTime);
-	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-		MyScene.camera->ProcessKeyboard(BACKWARD, deltaTime);
-	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-		MyScene.camera->ProcessKeyboard(RIGHT, deltaTime);
-	*/if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
-	{
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
 		MyScene.camera->Zoom = 20;
-	}
 	else
-	{
 		MyScene.camera->Zoom = 45;
-	}
 }
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
@@ -422,14 +468,33 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 			glfwSetCursorPos(window, width / 2, height / 2);
 			ActiveMenu = !ActiveMenu;
 			break;
+		case GLFW_KEY_F:
+			if (constraint)
+				phyManager.dynamicsWorld->removeConstraint(agarre);
+			else
+				phyManager.dynamicsWorld->addConstraint(agarre, true);
+			constraint = !constraint;
+			break;
+		case GLFW_KEY_SPACE:
+			rigidBodyPersonaje->applyCentralImpulse(btVector3(0, 500, 0));
+			break;
 		}
+
 	}
+}
+
+void configurePhysicsDebugger(Shader& LineDebug)
+{
+	physicsDebugger->camera = &camera;
+	physicsDebugger->shaderDebug = &LineDebug;
+	physicsDebugger->DBG_DrawWireframe;
+	physicsDebugger->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
+	physicsDebugger->setDebugMode(1);
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
 	camera.windowSize = { width,height };
 	glViewport(0, 0, width, height);
-	std::cout << "Rigidbody personaje: " << rigidBodyPersonaje << std::endl;
 
 }
