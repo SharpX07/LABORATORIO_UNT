@@ -59,6 +59,8 @@ btRigidBody* cuerpoSeleccionado = nullptr;
 std::vector<Instance*> Seleccionables;
 Shader* ptr_ShaderEstatico, * ptr_ShaderProyeccion;
 
+bool modoPizarra = false;
+
 Instance* obtenerInstanciaporRbody(btRigidBody* body);
 
 double calculateFPS(double& lastTime, int& nbFrames);
@@ -252,9 +254,7 @@ int main()
 			processInput(window);
 		if (!ActiveMenu)
 		{
-
 			activarMotorPuerta(hingeConstraint, positionPuerta, R_Puerta.Body);
-
 			R_Personaje.Body->activate();
 			btVector3 fuerza(0.0, 0.0, 0.0);
 			// Aplicar fuerza al RigidBody
@@ -273,6 +273,31 @@ int main()
 			limitarPersonaje(R_Personaje.Body);
 			R_Personaje.Body->applyCentralForce(fuerza);
 
+			if (modoPizarra)
+			{
+				Instance* temp = obtenerInstanciaporRbody(cuerpoSeleccionado);
+
+				if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+				{
+					glm::quat rotacion = glm::angleAxis(glm::radians(-1.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+					temp->Rotation = rotacion * temp->Rotation;
+				}
+				if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+				{
+					glm::quat rotacion = glm::angleAxis(glm::radians(1.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+					temp->Rotation = rotacion * temp->Rotation;
+				}
+				if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+				{
+					glm::quat rotacion = glm::angleAxis(glm::radians(-1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+					temp->Rotation = rotacion * temp->Rotation;
+				}
+				if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+				{
+					glm::quat rotacion = glm::angleAxis(glm::radians(1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+					temp->Rotation = rotacion * temp->Rotation;
+				}
+			}
 
 			if (cuerpoSeleccionado)
 			{
@@ -281,6 +306,7 @@ int main()
 				agarre->setPivotB(convertirGLM2Bullet(camera.Position) + convertirGLM2Bullet(camera.Front * (float)2.0));
 				if (phyManager.checkForCollisions(R_Trigger.Body, cuerpoSeleccionado))
 				{
+					modoPizarra = true;
 					Instance* instancia_temp = obtenerInstanciaporRbody(cuerpoSeleccionado);
 					instancia_temp->asset->shader = ptr_ShaderProyeccion;
 					instancia_temp->havePhysics = false;
@@ -288,7 +314,6 @@ int main()
 				}
 			}
 		}
-
 		//Renderizado de la escena
 		glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -300,7 +325,6 @@ int main()
 			R_Personaje.getPosition().z());
 		// Dibujamos la escena
 		MyScene.draw();
-
 
 		//Para dibujar las lineas de colisión 
 #ifdef DEBUG
@@ -406,10 +430,11 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 				Instance* temp = obtenerInstanciaporRbody(cuerpoSeleccionado);
 				if (temp)
 				{
+					temp->havePhysics = true;
 					temp->asset->shader = ptr_ShaderEstatico;
 				}
 				cuerpoSeleccionado = nullptr;
-
+				modoPizarra = false;
 			}
 			else
 			{
