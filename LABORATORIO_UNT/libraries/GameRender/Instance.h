@@ -17,7 +17,7 @@ public:
     glm::vec3 scale{ 1,1,1 };  // Escala de la instancia
     bool isVisible = true;     // Indica si la instancia es visible
     Rigidbody* rigidBody;      // Puntero al componente de física asociado a la instancia
-
+    bool havePhysics = true;
     // Constructores
     Instance(Asset* asset);
     Instance(Asset* asset, std::string name);

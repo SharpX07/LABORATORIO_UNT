@@ -55,8 +55,11 @@ GLDebugDrawer* physicsDebugger;
 btRigidBody* rigidBodyPersonaje;
 btPoint2PointConstraint* agarre;
 PhysicsManager phyManager = PhysicsManager();
-
 btRigidBody* cuerpoSeleccionado = nullptr;
+std::vector<Instance*> Seleccionables;
+Shader* ptr_ShaderEstatico, * ptr_ShaderProyeccion;
+
+Instance* obtenerInstanciaporRbody(btRigidBody* body);
 
 double calculateFPS(double& lastTime, int& nbFrames);
 
@@ -118,6 +121,8 @@ int main()
 	Shader LineDebug("shaders/gun.vs", "shaders/gun.fs");
 	Shader simplecolor("shaders/simplecolor.vs", "shaders/simplecolor.fs");
 	Shader plana("shaders/proyeccion.vs", "shaders/proyeccion.fs");
+	ptr_ShaderEstatico = &staticshader;
+	ptr_ShaderProyeccion = &plana;
 
 	Model M_Room("models/clase.gltf");
 	Asset A_Room = Asset(&staticshader, &M_Room);
@@ -125,19 +130,14 @@ int main()
 	MyScene.addInstance(&I_Room);
 
 	Model M_Tierra("models/tierra.gltf");
-	Asset A_Tierra = Asset(&plana, &M_Tierra);
+	Asset A_Tierra = Asset(&staticshader, &M_Tierra);
 	Instance I_Tierra = Instance(&A_Tierra, "Esfera");
 	MyScene.addInstance(&I_Tierra);
 
 	Model M_Cubo("models/cubo.gltf");
-	Asset A_Cubo = Asset(&plana, &M_Cubo);
+	Asset A_Cubo = Asset(&staticshader, &M_Cubo);
 	Instance I_Cubo = Instance(&A_Cubo, "Cubo");
 	MyScene.addInstance(&I_Cubo);
-
-	Model M_Texto("models/Boton.gltf");
-	Asset A_Texto = Asset(&staticshader, &M_Texto);
-	Instance I_Texto = Instance(&A_Texto);
-	MyScene.addInstance(&I_Texto);
 
 	Model M_Puerta("models/puerta.gltf");
 	Asset A_Puerta = Asset(&puertaShader, &M_Puerta);
@@ -146,7 +146,8 @@ int main()
 	MyScene.addInstance(&I_Puerta);
 	// Creación de assets e instancias
 
-
+	Seleccionables.push_back(&I_Cubo);
+	Seleccionables.push_back(&I_Tierra);
 
 	// Configuración de luces y cámara
 	Light light({ 0.0f, 50.0f, 20.0f }, { 255, 255, 255 });
@@ -194,6 +195,11 @@ int main()
 	Rigidbody R_Esfera(CS_Esfera, 10, btVector3(0, 1, 0));
 	MyScene.physicsManager->addRigidBody(&R_Esfera);
 
+	btCollisionShape* CS_Trigger = new btBoxShape(btVector3(0.25, 1.25, 2.5));
+	Rigidbody R_Trigger(CS_Trigger, 0, btVector3(13.9, 3, 1.8));
+	MyScene.physicsManager->addRigidBody(&R_Trigger);
+	R_Trigger.Body->setCollisionFlags(R_Trigger.Body->getCollisionFlags() | btCollisionObject::CF_NO_CONTACT_RESPONSE);
+	
 
 	agregarRigidbodiesAula(M_Room);
 
@@ -264,11 +270,6 @@ int main()
 				fuerza = btVector3(-normF.x * force, 0, -normF.z * force);
 			if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 				fuerza = btVector3(normR.x * force, 0, normR.z * force);
-			if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
-				A_Tierra.shader = &staticshader;
-			else
-				A_Tierra.shader = &plana;
-
 			limitarPersonaje(R_Personaje.Body);
 			R_Personaje.Body->applyCentralForce(fuerza);
 
@@ -278,6 +279,13 @@ int main()
 				cuerpoSeleccionado->setLinearVelocity(btVector3(0.0f, 0.0f, 0.0f));
 				cuerpoSeleccionado->setAngularVelocity(btVector3(0.0f, 0.0f, 0.0f));
 				agarre->setPivotB(convertirGLM2Bullet(camera.Position) + convertirGLM2Bullet(camera.Front * (float)2.0));
+				if (phyManager.checkForCollisions(R_Trigger.Body, cuerpoSeleccionado))
+				{
+					Instance* instancia_temp = obtenerInstanciaporRbody(cuerpoSeleccionado);
+					instancia_temp->asset->shader = ptr_ShaderProyeccion;
+					instancia_temp->havePhysics = false;
+					instancia_temp->Position = { 13.72, 2.6, 1.927 };
+				}
 			}
 		}
 
@@ -293,14 +301,14 @@ int main()
 		// Dibujamos la escena
 		MyScene.draw();
 
-		// Se dibujan los ejes
-		//draw_3daxis(simplecolor, camera);
 
 		//Para dibujar las lineas de colisión 
 #ifdef DEBUG
 		MyScene.physicsManager->dynamicsWorld->debugDrawWorld();
 		double fps = calculateFPS(currentFrame, nbFrames);
 		UI_FPS(fps);
+		// Se dibujan los ejes
+		draw_3daxis(simplecolor, camera);
 #endif // DEBUG
 
 		UI_Position(camera.Position);
@@ -395,7 +403,13 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 				phyManager.dynamicsWorld->removeConstraint(agarre);
 				delete agarre;
 				agarre = NULL;
+				Instance* temp = obtenerInstanciaporRbody(cuerpoSeleccionado);
+				if (temp)
+				{
+					temp->asset->shader = ptr_ShaderEstatico;
+				}
 				cuerpoSeleccionado = nullptr;
+
 			}
 			else
 			{
@@ -416,7 +430,6 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 					cuerpoSeleccionado = nullptr;
 					break;
 				}
-
 			}
 			constraint = !constraint;
 			break;
@@ -424,7 +437,6 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 			rigidBodyPersonaje->applyCentralImpulse(btVector3(0, 500, 0));
 			break;
 		}
-
 	}
 }
 
@@ -461,6 +473,15 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 	camera.windowSize = { width,height };
 	glViewport(0, 0, width, height);
 
+}
+Instance* obtenerInstanciaporRbody(btRigidBody* body)
+{
+	for (int i = 0; i < Seleccionables.size(); i++)
+	{
+		if (Seleccionables.at(i)->rigidBody->Body == body)
+			return Seleccionables.at(i);
+	}
+	return nullptr;
 }
 //Función para obtener los fps
 double calculateFPS(double& lastTime, int& nbFrames) {

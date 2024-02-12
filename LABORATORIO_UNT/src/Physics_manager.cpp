@@ -45,11 +45,6 @@ bool PhysicsManager::rayCast(const btVector3& desde, const btVector3& hacia, btR
     }
 }
 
-
-
-
-
-
 // Destructor de PhysicsManager
 PhysicsManager::~PhysicsManager()
 {
@@ -82,4 +77,21 @@ PhysicsManager::~PhysicsManager()
     delete overlappingPairCache;
     delete dispatcher;
     delete collisionConfiguration;
+}
+
+bool PhysicsManager::checkForCollisions(btCollisionObject* obj1, btCollisionObject* obj2)
+{
+    // Crear un callback de colisiones
+    MyContactResultCallback callback;
+
+    // Configurar los objetos en el callback y realizar la verificación de colisión
+    callback.hasCollision = false;
+    dynamicsWorld->contactPairTest(obj1, obj2, callback);
+
+    // Si hay una colisión, hacer algo
+    if (callback.hasCollision)
+    {
+        return true;
+    }
+    return false;
 }

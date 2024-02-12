@@ -71,7 +71,7 @@ glm::mat4 convertFloatMatrixtoGlmMat4(float matrixValues[16])
 // Actualiza la instancia, especialmente útil para objetos con física asociada
 void Instance::update()
 {
-    if (rigidBody)
+    if (rigidBody && havePhysics)
     {
         btTransform t;
         glm::vec3 traslation, scale;
