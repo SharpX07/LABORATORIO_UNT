@@ -91,6 +91,7 @@ void Instance::update()
 
         this->Rotation = orientation;
         this->Position = traslation;
+        this->scale = scale;
     }
 }
 
