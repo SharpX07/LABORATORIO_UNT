@@ -131,15 +131,35 @@ int main()
 	Instance I_Room = Instance(&A_Room);
 	MyScene.addInstance(&I_Room);
 
-	Model M_Tierra("models/ico.gltf");
+	Model M_Tierra("models/tierra.gltf");
 	Asset A_Tierra = Asset(&staticshader, &M_Tierra);
 	Instance I_Tierra = Instance(&A_Tierra, "Esfera");
 	MyScene.addInstance(&I_Tierra);
+
+	Model M_Icosaedro("models/ico.gltf");
+	Asset A_Icosaedro = Asset(&staticshader, &M_Icosaedro);
+	Instance I_Icosaedro = Instance(&A_Icosaedro, "Esfera");
+	MyScene.addInstance(&I_Icosaedro);
+
+	Model M_Ladrillo("models/ladrillo.gltf");
+	Asset A_Ladrillo = Asset(&staticshader, &M_Ladrillo);
+	Instance I_Ladrillo = Instance(&A_Ladrillo, "Esfera");
+	MyScene.addInstance(&I_Ladrillo);
 
 	Model M_Cubo("models/cubo.gltf");
 	Asset A_Cubo = Asset(&staticshader, &M_Cubo);
 	Instance I_Cubo = Instance(&A_Cubo, "Cubo");
 	MyScene.addInstance(&I_Cubo);
+
+	Model M_Cono("models/cono.gltf");
+	Asset A_Cono = Asset(&staticshader, &M_Cono);
+	Instance I_Cono = Instance(&A_Cono);
+	MyScene.addInstance(&I_Cono);
+
+	Model M_Cilindro("models/cilindro.gltf");
+	Asset A_Cilindro = Asset(&staticshader, &M_Cilindro);
+	Instance I_Cilindro = Instance(&A_Cilindro);
+	MyScene.addInstance(&I_Cilindro);
 
 	Model M_Puerta("models/puerta.gltf");
 	Asset A_Puerta = Asset(&puertaShader, &M_Puerta);
@@ -150,6 +170,10 @@ int main()
 
 	Seleccionables.push_back(&I_Cubo);
 	Seleccionables.push_back(&I_Tierra);
+	Seleccionables.push_back(&I_Icosaedro);
+	Seleccionables.push_back(&I_Ladrillo);
+	Seleccionables.push_back(&I_Cono);
+	Seleccionables.push_back(&I_Cilindro);
 
 	// Configuración de luces y cámara
 	Light light({ 0.0f, 50.0f, 20.0f }, { 255, 255, 255 });
@@ -197,6 +221,22 @@ int main()
 	Rigidbody R_Esfera(CS_Esfera, 10, btVector3(0, 1, 0));
 	MyScene.physicsManager->addRigidBody(&R_Esfera);
 
+	btConvexHullShape* CS_Icosaedro = obtenerMallaColision(M_Icosaedro.meshes[0]);
+	Rigidbody R_Icosaedro(CS_Icosaedro, 10, btVector3(0, 1, 0));
+	MyScene.physicsManager->addRigidBody(&R_Icosaedro);
+
+	btConvexHullShape* CS_Ladrillo = obtenerMallaColision(M_Ladrillo.meshes[0]);
+	Rigidbody R_Ladrillo(CS_Ladrillo, 10, btVector3(0, 1, 0));
+	MyScene.physicsManager->addRigidBody(&R_Ladrillo);
+
+	btConvexHullShape* CS_Cono = obtenerMallaColision(M_Cono.meshes[0]);
+	Rigidbody R_Cono(CS_Cono, 10, btVector3(0, 1, 0));
+	MyScene.physicsManager->addRigidBody(&R_Cono);
+
+	btConvexHullShape* CS_Cilindro = obtenerMallaColision(M_Cilindro.meshes[0]);
+	Rigidbody R_Cilindro(CS_Cilindro, 10, btVector3(0, 1, 0));
+	MyScene.physicsManager->addRigidBody(&R_Cilindro);
+
 	btCollisionShape* CS_Trigger = new btBoxShape(btVector3(0.25, 1.25, 2.5));
 	Rigidbody R_Trigger(CS_Trigger, 0, btVector3(13.9, 3, 1.8));
 	MyScene.physicsManager->addRigidBody(&R_Trigger);
@@ -211,6 +251,11 @@ int main()
 	I_Cubo.rigidBody = &R_Cubo;
 	rigidBodyPersonaje = R_Personaje.Body;
 	I_Tierra.rigidBody = &R_Esfera;
+	I_Icosaedro.rigidBody = &R_Icosaedro;
+	I_Ladrillo.rigidBody = &R_Ladrillo;
+	I_Cono.rigidBody = &R_Cono;
+	I_Cilindro.rigidBody = &R_Cilindro;
+
 	btVector3 restriccionRotacion(0, 0, 0);  // Restringe la rotación en el eje Y
 	R_Personaje.Body->setAngularFactor(restriccionRotacion);
 
@@ -228,9 +273,15 @@ int main()
 	//Bucle principal
 	while (running)
 	{
+		R_Puerta.Body->activate();
+		
 		R_Cubo.Body->activate();
 		R_Esfera.Body->activate();
-		R_Puerta.Body->activate();
+		R_Icosaedro.Body->activate();
+		R_Ladrillo.Body->activate();
+		R_Cono.Body->activate();
+		R_Cilindro.Body->activate();
+
 		// Se mantiene al punto de luz justo encima de la camara
 		light.position = camera.Position + glm::vec3(0, 3, 0);
 

@@ -3,140 +3,50 @@
 		"generator":"Khronos glTF Blender I/O v3.6.28",
 		"version":"2.0"
 	},
-	"extensionsUsed":[
-		"KHR_texture_transform",
-		"KHR_materials_clearcoat"
-	],
-	"extensionsRequired":[
-		"KHR_texture_transform"
-	],
 	"scene":0,
 	"scenes":[
 		{
 			"name":"Scene",
 			"nodes":[
-				1
+				0
 			]
 		}
 	],
 	"nodes":[
 		{
 			"mesh":0,
-			"name":"Icosphere_Main_0",
+			"name":"Object_2",
 			"scale":[
-				0.010088692419230938,
-				0.010088692419230938,
-				0.010088692419230938
-			]
-		},
-		{
-			"children":[
-				0
-			],
-			"name":"Icosphere",
-			"rotation":[
-				-0.70710688829422,
-				0,
-				0,
-				0.7071066498756409
-			],
-			"scale":[
-				100,
-				99.99999237060547,
-				99.99999237060547
+				0.23999999463558197,
+				0.23999999463558197,
+				0.23999999463558197
 			]
 		}
 	],
 	"materials":[
 		{
 			"doubleSided":true,
-			"extensions":{
-				"KHR_materials_clearcoat":{
-					"clearcoatFactor":0.779608964920044,
-					"clearcoatRoughnessFactor":0.800000011920929,
-					"clearcoatRoughnessTexture":{
-						"extensions":{
-							"KHR_texture_transform":{
-								"scale":[
-									2,
-									2
-								]
-							}
-						},
-						"index":0
-					},
-					"clearcoatNormalTexture":{
-						"extensions":{
-							"KHR_texture_transform":{
-								"scale":[
-									2,
-									2
-								]
-							}
-						},
-						"index":1,
-						"scale":0.3117542266845703
-					}
-				}
-			},
-			"name":"Main",
-			"normalTexture":{
-				"extensions":{
-					"KHR_texture_transform":{
-						"scale":[
-							2,
-							2
-						]
-					}
-				},
-				"index":2,
-				"scale":0.3117542266845703
-			},
+			"name":"FrontColor",
 			"pbrMetallicRoughness":{
-				"baseColorFactor":[
-					0.6702403426170349,
-					0.6702403426170349,
-					0.6702403426170349,
-					1
-				],
 				"baseColorTexture":{
-					"extensions":{
-						"KHR_texture_transform":{
-							"scale":[
-								2,
-								2
-							]
-						}
-					},
-					"index":3
+					"index":0
 				},
-				"metallicRoughnessTexture":{
-					"extensions":{
-						"KHR_texture_transform":{
-							"scale":[
-								2,
-								2
-							]
-						}
-					},
-					"index":4
-				},
-				"roughnessFactor":0.8199999928474426
+				"metallicFactor":0,
+				"roughnessFactor":0.6000000238418579
 			}
 		}
 	],
 	"meshes":[
 		{
-			"name":"Icosphere_Main_0",
+			"name":"Object_0",
 			"primitives":[
 				{
 					"attributes":{
-						"COLOR_0":0,
-						"POSITION":1,
-						"NORMAL":2,
-						"TEXCOORD_0":3
+						"POSITION":0,
+						"NORMAL":1,
+						"TEXCOORD_0":2
 					},
-					"indices":4,
+					"indices":3,
 					"material":0
 				}
 			]
@@ -146,118 +56,74 @@
 		{
 			"sampler":0,
 			"source":0
-		},
-		{
-			"sampler":0,
-			"source":1
-		},
-		{
-			"sampler":0,
-			"source":1
-		},
-		{
-			"sampler":0,
-			"source":2
-		},
-		{
-			"sampler":0,
-			"source":3
 		}
 	],
 	"images":[
 		{
 			"mimeType":"image/png",
-			"name":"Image_3",
-			"uri":"texturasIcosaedro/Image_3.png"
-		},
-		{
-			"mimeType":"image/png",
-			"name":"Image_2",
-			"uri":"texturasIcosaedro/Image_2.png"
-		},
-		{
-			"mimeType":"image/png",
-			"name":"Image_0",
-			"uri":"texturasIcosaedro/Image_0.png"
-		},
-		{
-			"mimeType":"image/png",
-			"name":"Image_1",
-			"uri":"texturasIcosaedro/Image_1.png"
+			"name":"icosa",
+			"uri":"texturasIcosaedro/icosa.png"
 		}
 	],
 	"accessors":[
 		{
 			"bufferView":0,
-			"componentType":5123,
-			"count":1146,
-			"normalized":true,
-			"type":"VEC4"
+			"componentType":5126,
+			"count":60,
+			"max":[
+				0.8126383423805237,
+				0.8124240636825562,
+				0.8167704939842224
+			],
+			"min":[
+				-0.805393636226654,
+				-0.8056559562683105,
+				-0.8012644648551941
+			],
+			"type":"VEC3"
 		},
 		{
 			"bufferView":1,
 			"componentType":5126,
-			"count":1146,
-			"max":[
-				0.8489555716514587,
-				0.9942668676376343,
-				0.8914014101028442
-			],
-			"min":[
-				-0.8489555716514587,
-				-0.9942668676376343,
-				-0.8914014101028442
-			],
+			"count":60,
 			"type":"VEC3"
 		},
 		{
 			"bufferView":2,
 			"componentType":5126,
-			"count":1146,
-			"type":"VEC3"
-		},
-		{
-			"bufferView":3,
-			"componentType":5126,
-			"count":1146,
+			"count":60,
 			"type":"VEC2"
 		},
 		{
-			"bufferView":4,
+			"bufferView":3,
 			"componentType":5123,
-			"count":2940,
+			"count":60,
 			"type":"SCALAR"
 		}
 	],
 	"bufferViews":[
 		{
 			"buffer":0,
-			"byteLength":9168,
+			"byteLength":720,
 			"byteOffset":0,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":13752,
-			"byteOffset":9168,
+			"byteLength":720,
+			"byteOffset":720,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":13752,
-			"byteOffset":22920,
+			"byteLength":480,
+			"byteOffset":1440,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":9168,
-			"byteOffset":36672,
-			"target":34962
-		},
-		{
-			"buffer":0,
-			"byteLength":5880,
-			"byteOffset":45840,
+			"byteLength":120,
+			"byteOffset":1920,
 			"target":34963
 		}
 	],
@@ -269,7 +135,7 @@
 	],
 	"buffers":[
 		{
-			"byteLength":51720,
+			"byteLength":2040,
 			"uri":"ico.bin"
 		}
 	]

@@ -37,8 +37,10 @@ void main()
     // Obtener la rotación directamente de la matriz de modelo
     Normals = mat3(transpose(inverse(model))) * aNormal;
     vec4 prev = model * vec4(0,0,0, 1.0);
-    vec4 nnn =matriz * model * vec4(aPos, 1.0);
+    vec4 aplanado =matriz * model * vec4(aPos, 1.0);
     
-    nnn.x = prev.x;
-    gl_Position = projection * view*nnn;
+    // Agrega el desplazamiento aleatorio en el eje X
+    aplanado.x = prev.x;
+
+    gl_Position = projection * view*aplanado;
 }
