@@ -49,7 +49,7 @@ Scene MyScene;
 Camera camera;
 double deltaTime;
 bool ActiveMenu = false;
-bool constraint = false;
+bool constraint = false; //Condicion si se agarra algo
 // GLDebugDrawer sirve para dibujar lineas en los cuerpos de las fisicas y para ver sus mallas de colisión
 GLDebugDrawer* physicsDebugger;
 btRigidBody* rigidBodyPersonaje;
@@ -138,9 +138,9 @@ int main()
 	ptr_ShaderEstatico = &staticshader;
 	ptr_ShaderProyeccion = &plana;
 
-	Model M_Room("models/clase.gltf");
-	Asset A_Room = Asset(&staticshader, &M_Room);
-	Instance I_Room = Instance(&A_Room);
+	Model M_Room("models/clase.gltf"); //vertices, texturas
+	Asset A_Room = Asset(&staticshader, &M_Room); //Shader, Modelo
+	Instance I_Room = Instance(&A_Room); // Asset (dibujar), 
 	MyScene.addInstance(&I_Room);
 
 	Model M_Tierra("models/tierra.gltf");
@@ -163,7 +163,7 @@ int main()
 	Instance I_Cubo = Instance(&A_Cubo, "Cubo");
 	MyScene.addInstance(&I_Cubo);
 
-	Model M_Cono("models/cono.gltf");
+	Model M_Cono("models/cono2.gltf");
 	Asset A_Cono = Asset(&staticshader, &M_Cono);
 	Instance I_Cono = Instance(&A_Cono, "Cono");
 	MyScene.addInstance(&I_Cono);
@@ -205,11 +205,13 @@ int main()
 	// Creación de formas de colisión y rigidbodies
 
 	I_Puerta.Position = { 3.5,1.55 ,-1.3492 - 0.825405 };
+	
 	btCollisionShape* CS_Puerta = new btBoxShape(btVector3(0.04, 1.5, 0.811305));
 	Rigidbody R_Puerta(CS_Puerta, 10, convertirGLM2Bullet(I_Puerta.Position + glm::vec3(0, 0, 0)));
+	
 	R_Puerta.Body->setFriction(0.5f);
 	MyScene.physicsManager->addRigidBody(&R_Puerta);
-	btVector3 axis(0, 0, 1); // Eje de rotación vertical
+	//----------------------------->> Eje de puerta
 	btTransform frameInA;
 	frameInA = btTransform::getIdentity();
 	frameInA.setOrigin(btVector3(0, 0, 0.81)); // Punto de conexión en la puerta
@@ -219,7 +221,7 @@ int main()
 	btHingeConstraint* hingeConstraint = new btHingeConstraint(*R_Puerta.Body, frameInA, true);
 	phyManager.dynamicsWorld->addConstraint(hingeConstraint);
 	I_Puerta.rigidBody = &R_Puerta;
-
+	//----------------------------->>
 	btCollisionShape* CS_Personaje = new btCapsuleShape(0.3, 1.7);
 	Rigidbody R_Personaje(CS_Personaje, 75, btVector3(1, 0, 2));
 	MyScene.physicsManager->addRigidBody(&R_Personaje);
@@ -290,6 +292,8 @@ int main()
 	float anchoPrisma = 9;
 	float largoPrisma = 24;
 	float altoPrisma = 13;
+	float alturaCono = 20;
+	float radioCono = 10;
 
 
 	//Bucle principal
@@ -325,7 +329,11 @@ int main()
 		// Si se presiona escape entonces no se puede mover nada en la escena, el mouse se encuentra libre
 		if (!ActiveMenu)
 			processInput(window);
+		
+		//----------------------------->> Motor de Puerta
 		activarMotorPuerta(hingeConstraint, positionPuerta, R_Puerta.Body);
+		
+		
 		R_Personaje.Body->activate();
 		btVector3 fuerza(0.0, 0.0, 0.0);
 		// Aplicar fuerza al RigidBody
@@ -382,6 +390,7 @@ int main()
 			}
 		}
 
+		//-----------------------------------------------> Pizarra
 		if (modoPizarra)
 		{
 			Instance* instancia_temp = obtenerInstanciaporRbody(cuerpoSeleccionado);
@@ -395,6 +404,7 @@ int main()
 			camera.Front = { 1,0,0 };
 			camera.Position = { 10.19, 2.655, 1.663 };  // Reemplaza 1, 2, 3 con tus coordenadas deseadas
 			ActiveMenu = true;
+
 			string nombreObjeto = instancia_temp->Name;
 			if (nombreObjeto == "Cubo")
 			{
@@ -414,7 +424,9 @@ int main()
 				ImGui::Begin("Parametros");
 				ImGui::SetNextWindowSize(ImVec2(400, 300));
 				ImGui::SliderFloat("Lado (cm)",&ladoCubo,1,100);
+				
 				I_Cubo.scale = { ladoCubo / 50,ladoCubo / 50,ladoCubo/50};
+				
 				float volumen = ladoCubo* ladoCubo* ladoCubo/1000000;
 				ImGui::InputFloat("Volumen (m^3)", &volumen, 1, 100);
 				ImGui::End();
@@ -517,8 +529,13 @@ int main()
 
 				ImGui::Begin("Parametros");
 				ImGui::SetNextWindowSize(ImVec2(400, 300));
-				ImGui::SliderFloat("Lado del Cono (cm)", &ladoIcosaedro, 1, 100);
-				I_Cono.scale = { ladoIcosaedro / 24,ladoIcosaedro / 24,ladoIcosaedro / 24 };
+				ImGui::SliderFloat("Altura del Cono (cm)", &alturaCono, 1, 100);
+				ImGui::SliderFloat("Radio del Cono (cm)", &radioCono, 1, 100);
+				
+				I_Cono.scale = { radioCono / 10,alturaCono / 20,radioCono / 10 };
+				
+				float volumen = radioCono*radioCono*alturaCono* 3.141592 /3.0/ 1000000;
+				ImGui::InputFloat("Volumen (m^3)", &volumen, 1, 100);
 				ImGui::End();
 			}
 
@@ -560,7 +577,7 @@ int main()
 	phyManager.collisionShapes.clear();
 	return 0;
 }
-
+//----------------------------->> Motor de puerta
 void activarMotorPuerta(btHingeConstraint* hingeConstraint, btVector3 position, btRigidBody* body)
 {
 	if (position.getX() < 3.5)
@@ -572,6 +589,7 @@ void activarMotorPuerta(btHingeConstraint* hingeConstraint, btVector3 position, 
 	{
 		hingeConstraint->enableAngularMotor(true, 0.7f, 0.5f); // Velocidad
 	}
+
 	if (std::abs(position.getX() - 3.5) < 0.01)
 	{
 		body->setLinearVelocity(btVector3(0, 0, 0));
@@ -652,6 +670,8 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 			glfwSetCursorPos(window, width / 2, height / 2);
 			ActiveMenu = !ActiveMenu;
 			break;
+		
+			//--------------------------------------> Agarrar Objetos
 		case GLFW_KEY_F:
 			if (constraint)
 			{
@@ -676,6 +696,8 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 				btRigidBody* cuerpo = nullptr;
 				phyManager.rayCast(origenRayo, destinoRay2, cuerpo);
+
+
 				if (cuerpo)
 				{
 					cuerpoSeleccionado = cuerpo;
